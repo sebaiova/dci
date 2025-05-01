@@ -2,7 +2,7 @@
 #include <sstream>
 #include <iostream>
 #include <expected>
-#include "lexical.hpp"
+#include <lexical_analyzer.hpp>
 
 struct error
 {
@@ -28,16 +28,14 @@ struct error
 
 [[nodiscard]] auto parse(std::stringstream sstring) -> std::expected<bool, error>
 {
-    std::cout << sstring.str() << std::endl;
+    auto result { lexical::analyzer(sstring) };
 
-    lexical lex;
-    lex.analisys(sstring);
+    if(!result)
+        return std::unexpected(error("Lexical error."));
 
-    auto& table { lex.table() };
-    for(auto& t : table)
-        std::cout << t.first << "\t" << t.second << "\n";
-
-
+    for(auto& lexeme : result->lexeme_table)
+        std::cout << lexeme.token << "\t" << lexeme.attribute << "\n";
+        
     return true;
 }
 
