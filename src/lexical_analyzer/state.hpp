@@ -3,23 +3,25 @@
 #include <string>
 #include <memory>
 #include <functional>
+#include <expected>
 #include "lexeme.hpp"
+#include "error.hpp"
 
 namespace state 
-{    
-    struct state_result
-    {
-        state_result();
-        state_result(const lexeme& lex, const std::function<state_result(char, const std::string&)>& next_transition);
-        
-        lexeme lex {};
-        std::function<state_result(char, const std::string&)> next_transition {};
-    };
+{   
+    struct result;
+    using transition = std::expected<result, error>(*)(char);
 
-    state_result start(char c, const std::string& acc = "");
-    state_result identifier(char c, const std::string& acc);
-    state_result number(char c, const std::string& acc);
-    state_result relop(char c, const std::string& acc);
-    state_result assign(char c, const std::string& acc);
-    state_result space(char c, const std::string& acc);
+    [[nodiscard]] auto start(char c)        -> std::expected<result, error>;
+    [[nodiscard]] auto identifier(char c)   -> std::expected<result, error>;
+    [[nodiscard]] auto number(char c)       -> std::expected<result, error>;
+    [[nodiscard]] auto relop(char c)        -> std::expected<result, error>;
+    [[nodiscard]] auto assign(char c)       -> std::expected<result, error>;
+    template<lexeme T> [[nodiscard]] auto space(char c) -> std::expected<result, error>;
+
+    struct result
+    {
+        lexeme token { lexeme::UNDETERMINATED };
+        transition next_transition { state::start };
+    };
 };

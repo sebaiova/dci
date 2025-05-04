@@ -1,42 +1,61 @@
 #include "lexical_analyzer.hpp"
 #include "state.hpp"
+#include <iostream>
 
-namespace lexical 
+
+
+auto lexical_analyzer::operator>>(std::expected<lexeme, error>& output) -> lexical_analyzer&
 {
-    [[nodiscard]] auto analyzer(std::stringstream& sstream) -> std::expected<result, error>
+    std::expected<state::result, error> current_state { state::result{} };
+
+    skip_spaces();
+
+    start = it;
+    while(it != buffer.end())
     {
-        std::set<lexeme> lexeme_table;
-        std::list<lexeme> lexeme_stream;
-        std::size_t line { 0 };
-        std::size_t col { 0 };
-        state::state_result current_state;
+        char c = next_char();
 
-        char c;
-        while(sstream.get(c))
+        if(!(current_state = current_state->next_transition(c)))
         {
-            if(c=='\n')
-            {
-                line++;
-                col=0;
-            }
-                
-            c = std::tolower(c);
-
-            current_state = current_state.next_transition(c, current_state.lex.attribute);
-
-            if(current_state.lex.token == lexeme::ERROR)
-                return std::unexpected{error(c, line, col)};
-
-            if(current_state.lex.token != lexeme::UNDETERMINATED)
-            {
-                sstream.unget();
-                lexeme_stream.push_back(*lexeme_table.insert(current_state.lex).first);
-            }
-
-            col++;
+            output = std::unexpected(error(std::format("Unexpected character '{}' at (line: {}, col: {}).", c, line, col)));
+            break;
         }
 
-        return result(lexeme_table, lexeme_stream);
+        if(current_state->token)
+        {
+            backtrack();
+            output = current_state->token;
+            std::cout << std::string(start, it) << " ";
+            break;
+        }
     }
+    return *this;
 }
 
+char lexical_analyzer::next_char()
+{
+    char c = *it;
+    it++;
+    col++;
+    return std::tolower(c);
+}
+
+void lexical_analyzer::backtrack()
+{
+    it--;
+    col--;
+}
+
+void lexical_analyzer::skip_spaces()
+{
+    while(std::isspace(*it))
+    {
+        if(*it=='\n')
+        {
+            col=-1;
+            line++;
+        }
+        it++;
+        col++;
+    }
+}

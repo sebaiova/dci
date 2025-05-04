@@ -2,79 +2,112 @@
 
 namespace state 
 {
-    state_result::state_result() : 
-        lex {lexeme::UNDETERMINATED, ""}, next_transition { state::start }
-    {
 
-    }
-
-    state_result::state_result(const lexeme& lex, const std::function<state_result(char, const std::string&)>& next_transition) :
-        lex { lex }, next_transition { next_transition }
-    {
-        
-    }
-
-    state_result start(char c, const std::string& acc)
+    template <lexeme LEXEME> auto keyword(char c) -> std::expected<result, error>
     {
         switch (c)
         {
-            case 'a'...'z': return {{ lexeme::UNDETERMINATED, c}, state::identifier };
-            case '0'...'9': return {{ lexeme::UNDETERMINATED, c}, state::number  };
-            case '+':   
-            case '-':       return {{ lexeme::ARITHMETIC_OPERATOR, c}, state::start };
-            case '=':       return {{ lexeme::RELATIONAL_OPERATOR, c}, state::start };
-            case '<':
-            case '>':       return {{ lexeme::UNDETERMINATED, c}, state::relop };
-            case ':':       return {{ lexeme::UNDETERMINATED, c}, state::assign };
-            case ' ':
-            case '\n':
-            case '\t':      return {{ lexeme::UNDETERMINATED, c}, state::start };
-            default:        return {{ lexeme::ERROR, c}, state::start };
+            case '0'...'9':
+            case 'a'...'z': return result { lexeme::UNDETERMINATED, state::identifier };
+            default: return result { LEXEME, state::start };
         }
     };
 
-    state_result identifier(char c, const std::string& acc)
+    template <lexeme LEXEME, char HEAD, char... TAIL> auto keyword(char c) -> std::expected<result, error>
+    {
+        if(c == HEAD)
+            return result { lexeme::UNDETERMINATED, state::keyword<LEXEME, TAIL...> };
+        return state::identifier(c);
+    };
+
+    template <lexeme LEXEME1, char HEAD1, char... TAIL1, lexeme LEXEME2, char HEAD2, char... TAIL2> auto keyword(char c) -> std::expected<result, error>
+    {
+        if(c == HEAD1 && c == HEAD2)
+            return result { lexeme::UNDETERMINATED, state::keyword<LEXEME1, TAIL1..., LEXEME2, TAIL2...> };
+
+        switch(c)
+        {
+            case HEAD1: return result { lexeme::UNDETERMINATED, state::keyword<LEXEME1, TAIL1...> };
+            case HEAD2: return result { lexeme::UNDETERMINATED, state::keyword<LEXEME2, TAIL2...> };
+            default: return state::identifier(c);
+        }
+    };
+
+    auto start(char c) -> std::expected<result, error>
+    {
+        switch (c)
+        {
+            case 'a'...'z': 
+            switch (c)
+            {
+                case 'w': return result { lexeme::UNDETERMINATED, state::keyword<lexeme::WHILE, 'h', 'i', 'l', 'e'> };
+                case 'p': return result { lexeme::UNDETERMINATED, state::keyword<lexeme::BEGIN_PROGRAM, 'r', 'o', 'g', 'r', 'a', 'm', lexeme::PROCEDURE, 'r', 'o', 'c', 'e', 'd', 'u', 'r', 'e'> };
+                default: return result { lexeme::UNDETERMINATED, state::identifier };
+            }
+                
+            case '0'...'9': return result { lexeme::UNDETERMINATED, state::number  };
+            case '+':   
+            case '-':      
+            case '*':       return result { lexeme::UNDETERMINATED, state::space<lexeme::ARITHMETIC_OPERATOR> };
+            case '.':       return result { lexeme::UNDETERMINATED, state::space<lexeme::END_PROGRAM> };
+            case ';':       return result { lexeme::UNDETERMINATED, state::space<lexeme::END_STATEMENT> };
+            case '(':       return result { lexeme::UNDETERMINATED, state::space<lexeme::OPEN_PARENTHESIS> };
+            case ')':       return result { lexeme::UNDETERMINATED, state::space<lexeme::CLOSE_PARENTHESIS> };
+            case '{':       return result { lexeme::UNDETERMINATED, state::space<lexeme::OPEN_CURLY_BRACKET> };
+            case '}':       return result { lexeme::UNDETERMINATED, state::space<lexeme::CLOSE_CURLY_BRACKET> };
+            case '=':       return result { lexeme::UNDETERMINATED, state::space<lexeme::RELATIONAL_OPERATOR> };
+            case '<':
+            case '>':       return result { lexeme::UNDETERMINATED, state::relop };
+            case ':':       return result { lexeme::UNDETERMINATED, state::assign };
+            case ' ':
+            case '\n':
+            case '\t':      return result { lexeme::UNDETERMINATED, state::start };
+            default:        return { std::unexpected( error()) };
+        }
+    };
+
+    auto identifier(char c) -> std::expected<result, error>
     {
         switch (c)
         {
             case 'a'...'z':
-            case '0'...'9': return {{ lexeme::UNDETERMINATED, acc+c}, state::identifier };
-            default:        return {{ lexeme::IDENTIFIER, acc}, state::start };
+            case '0'...'9': return result { lexeme::UNDETERMINATED, state::identifier };
+            default:        return result { lexeme::IDENTIFIER, state::start };
         }
     };
 
-    state_result number(char c, const std::string& acc)
+    auto number(char c) -> std::expected<result, error>
     {
         switch (c)
         {
-            case '0'...'9': return {{ lexeme::UNDETERMINATED, acc+c}, state::number };
-            case 'a'...'z': return {{ lexeme::ERROR, c},    state::start };
-            default:        return {{ lexeme::NUMBER, acc}, state::start };
+            case '0'...'9': return result { lexeme::UNDETERMINATED, state::number };
+            default:        return result { lexeme::NUMBER, state::start };
         }
     };
 
-    state_result relop(char c, const std::string& acc)
+    auto relop(char c) -> std::expected<result, error>
     {
         switch (c)
         {
-            case '=': return {{ lexeme::RELATIONAL_OPERATOR, acc+c}, state::space };
-            default : return {{ lexeme::RELATIONAL_OPERATOR, acc},   state::start };
+            case '=': return result { lexeme::UNDETERMINATED, state::space<lexeme::RELATIONAL_OPERATOR> };
+            default : return result { lexeme::RELATIONAL_OPERATOR, state::start };
         }
     };
 
-    state_result assign(char c, const std::string& acc)
+    auto assign(char c) -> std::expected<result, error>
     {
         switch (c)
         {
-            case '=': return {{ lexeme::ASSIGNATION, acc+c}, state::space };
-            default : return {{ lexeme::ERROR, acc+c}, state::start };
+            case '=': return result { lexeme::UNDETERMINATED, state::space<lexeme::ASSIGNATION> };
+            default : return std::unexpected( error() );
         }
     };
 
-    state_result space(char c, const std::string& acc)
+    template<lexeme T>auto space(char c) -> std::expected<result, error>
     {
-        return {{lexeme::UNDETERMINATED, ""}, state::start };
-    };
+        return result {T, state::start };
+    }
+
 }
 
 
