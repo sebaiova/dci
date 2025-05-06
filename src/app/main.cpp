@@ -3,7 +3,10 @@
 #include <iostream>
 #include <expected>
 #include <lexical_analyzer.hpp>
+#include "debug.hpp"
 
+std::set<std::string> identifiers;
+std::list<lexeme> token_stream;
 
 [[nodiscard]] auto open(const std::string& file_name) -> std::expected<std::string, error>
 {
@@ -20,14 +23,18 @@
 [[nodiscard]] auto parse(const std::string& string) -> std::expected<bool, error>
 {
     lexical_analyzer lexical(string);
-    std::expected<lexeme, error> token;
+    std::expected<lexical_analyzer::output, error> output;
 
-    while(lexical >> token)
+    while(lexical >> output)
     {
-        if(not token)
-            return std::unexpected(token.error());
-        std::cout << token.value() << "\n";
-    };
+        if(not output)
+            return std::unexpected(output.error());
+        
+        token_stream.push_front(output->token);
+
+        if(output->attribute)
+            identifiers.insert(*output->attribute);
+    }
     return true;
 }
 
@@ -39,11 +46,14 @@ bool print_error(error& err)
 
 int main(int argc, char** argv)
 {
-    if(0)
+    if(argc<2)
         std::cout << "No input file\n";
     else
     {
-        auto success { open("../../example.txt").and_then(parse) };
+        auto success { open(argv[1]).and_then(parse) };
+        print_symbol_table(identifiers);
+        print_token_stream(token_stream);
+
         if(not success)
             std::cout << success.error().msg << "\n";
     }

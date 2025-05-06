@@ -1,3 +1,5 @@
+set(CMAKE_BUILD_TYPE Release)
+
 add_library(
     lexical_analyzer STATIC
     lexical_analyzer.cpp

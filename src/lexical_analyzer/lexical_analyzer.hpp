@@ -9,13 +9,19 @@
 
 struct lexical_analyzer
 {
+    struct output
+    {
+        lexeme token;
+        std::optional<std::string> attribute;
+    };
+
     lexical_analyzer(const std::string& text) : 
         buffer { construct_buffer(text) }
     {
         it = buffer.begin();
     }
 
-    [[nodiscard]] auto operator>>(std::expected<lexeme, error>& other) -> lexical_analyzer&;
+    [[nodiscard]] auto operator>>(std::expected<output, error>& other) -> lexical_analyzer&;
 
     operator bool()
     {

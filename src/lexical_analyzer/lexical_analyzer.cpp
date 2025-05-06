@@ -2,9 +2,7 @@
 #include "state.hpp"
 #include <iostream>
 
-
-
-auto lexical_analyzer::operator>>(std::expected<lexeme, error>& output) -> lexical_analyzer&
+auto lexical_analyzer::operator>>(std::expected<output, error>& output) -> lexical_analyzer&
 {
     std::expected<state::result, error> current_state { state::result{} };
 
@@ -24,8 +22,9 @@ auto lexical_analyzer::operator>>(std::expected<lexeme, error>& output) -> lexic
         if(current_state->token)
         {
             backtrack();
-            output = current_state->token;
-            std::cout << std::string(start, it) << " ";
+            auto attribute { current_state->token==lexeme::IDENTIFIER ? std::make_optional(std::string(start, it)) : std::nullopt };
+            output = { current_state->token, attribute };
+          //  std::cout << std::string(start, it) << " ";
             break;
         }
     }

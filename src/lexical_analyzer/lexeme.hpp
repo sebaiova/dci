@@ -10,9 +10,10 @@ enum lexeme
     ASSIGNATION, 
     ARITHMETIC_OPERATOR, 
     RELATIONAL_OPERATOR,
-    BEGIN_PROGRAM,
-    END_PROGRAM,
-    END_STATEMENT,
+    PROGRAM,
+    DOT,
+    COLON,
+    SEMI_COLON,
     OPEN_PARENTHESIS,
     CLOSE_PARENTHESIS,
     OPEN_CURLY_BRACKET,
@@ -28,5 +29,10 @@ enum lexeme
     BEGIN,
     END,
     READ,
-    WRITE
+    WRITE,
+    INTEGER,
+    BOOLEAN,
+    TRUE,
+    FALSE,
+    DIV
 };
