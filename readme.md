@@ -1,10 +1,13 @@
-Compile
+# Mini Pascal Compiler (1% progress)
 
-at <dci-folder> run...
-mkdir build && cd build
-cmake ..
-make
+## Compile
 
-Run
+At \<dci-folder\>
+```
+$ mkdir build && cd build
+$ cmake ..
+$ make
+```
+## Run
 
-<dci-folder>/build/bin/app <file-to-compile>
+\<dci-folder\>/build/bin/dci \<file-to-compile\>
