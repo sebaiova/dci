@@ -30,7 +30,8 @@ std::list<lexeme> token_stream;
         if(not output)
             return std::unexpected(output.error());
         
-        token_stream.push_front(output->token);
+        if(output->token != lexeme::COMMENT)
+            token_stream.push_front(output->token);
 
         if(output->attribute)
             identifiers.insert(*output->attribute);

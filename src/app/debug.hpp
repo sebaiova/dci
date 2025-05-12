@@ -8,6 +8,7 @@
 constexpr std::string_view to_string(lexeme l) {
     switch (l) {
         case UNDETERMINATED: return "undetermined";
+        case COMMENT: return "comment";
         case IDENTIFIER: return "identifier";
         case NUMBER: return "number";
         case ASSIGNATION: return "assignation";

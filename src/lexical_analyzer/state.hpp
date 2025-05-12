@@ -17,6 +17,8 @@ namespace state
     [[nodiscard]] auto number(char c)       -> std::expected<result, error>;
     [[nodiscard]] auto relop(char c)        -> std::expected<result, error>;
     [[nodiscard]] auto assign(char c)       -> std::expected<result, error>;
+    [[nodiscard]] auto comment(char c)      -> std::expected<result, error>;
+
     template<lexeme T> [[nodiscard]] auto space(char c) -> std::expected<result, error>;
 
     struct result

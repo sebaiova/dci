@@ -16,7 +16,7 @@ namespace state
             case ';':       return result { lexeme::UNDETERMINATED, state::space<lexeme::SEMI_COLON> };
             case '(':       return result { lexeme::UNDETERMINATED, state::space<lexeme::OPEN_PARENTHESIS> };
             case ')':       return result { lexeme::UNDETERMINATED, state::space<lexeme::CLOSE_PARENTHESIS> };
-            case '{':       return result { lexeme::UNDETERMINATED, state::space<lexeme::OPEN_CURLY_BRACKET> };
+            case '{':       return result { lexeme::UNDETERMINATED, state::comment };
             case '}':       return result { lexeme::UNDETERMINATED, state::space<lexeme::CLOSE_CURLY_BRACKET> };
             case '=':       return result { lexeme::UNDETERMINATED, state::space<lexeme::RELATIONAL_OPERATOR> };
             case '<':
@@ -63,6 +63,15 @@ namespace state
         {
             case '=': return result { lexeme::UNDETERMINATED, state::space<lexeme::ASSIGNATION> };
             default : return result { lexeme::COLON, state::start };
+        }
+    };
+
+    auto comment(char c) -> std::expected<result, error>
+    {
+        switch(c)
+        {
+            case '}': return result { lexeme::UNDETERMINATED, state::space<lexeme::COMMENT> };
+            default: return result { lexeme::UNDETERMINATED, state::comment };
         }
     };
 

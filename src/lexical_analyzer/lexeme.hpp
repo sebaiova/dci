@@ -4,7 +4,8 @@
 
 enum lexeme
 {
-    UNDETERMINATED, 
+    UNDETERMINATED,
+    COMMENT,
     IDENTIFIER, 
     NUMBER, 
     ASSIGNATION, 
