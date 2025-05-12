@@ -11,8 +11,7 @@ namespace state
             case '0'...'9': return result { lexeme::UNDETERMINATED, state::number  };
             case '+':   
             case '-':      
-            case '*':       
-            case '/':       return result { lexeme::UNDETERMINATED, state::space<lexeme::ARITHMETIC_OPERATOR> };
+            case '*':       return result { lexeme::UNDETERMINATED, state::space<lexeme::ARITHMETIC_OPERATOR> };
             case '.':       return result { lexeme::UNDETERMINATED, state::space<lexeme::DOT> };
             case ';':       return result { lexeme::UNDETERMINATED, state::space<lexeme::SEMI_COLON> };
             case '(':       return result { lexeme::UNDETERMINATED, state::space<lexeme::OPEN_PARENTHESIS> };

@@ -28,5 +28,4 @@ using keywords = std::tuple<
     keyword<BOOLEAN, 'b', 'o', 'o', 'l', 'e', 'a', 'n'>,
     keyword<TRUE, 't', 'r', 'u', 'e'>,
     keyword<FALSE, 'f', 'a', 'l', 's', 'e'>,
-    keyword<DIV, 'd', 'i', 'v'>
 >;

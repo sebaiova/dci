@@ -24,7 +24,6 @@ auto lexical_analyzer::operator>>(std::expected<output, error>& output) -> lexic
             backtrack();
             auto attribute { current_state->token==lexeme::IDENTIFIER ? std::make_optional(std::string(start, it)) : std::nullopt };
             output = { current_state->token, attribute };
-          //  std::cout << std::string(start, it) << " ";
             break;
         }
     }
