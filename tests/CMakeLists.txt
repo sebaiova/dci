@@ -1,0 +1,5 @@
+add_test(NAME Test0 COMMAND $<TARGET_FILE:dci> ${CMAKE_CURRENT_SOURCE_DIR}/example00.pas)
+add_test(NAME Test1 COMMAND $<TARGET_FILE:dci> ${CMAKE_CURRENT_SOURCE_DIR}/example01.pas)
+add_test(NAME Test2 COMMAND $<TARGET_FILE:dci> ${CMAKE_CURRENT_SOURCE_DIR}/example02.pas)
+add_test(NAME Test3 COMMAND $<TARGET_FILE:dci> ${CMAKE_CURRENT_SOURCE_DIR}/example03.pas)
+add_test(NAME Test4 COMMAND $<TARGET_FILE:dci> ${CMAKE_CURRENT_SOURCE_DIR}/example04.pas)
