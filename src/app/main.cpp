@@ -52,11 +52,16 @@ int main(int argc, char** argv)
     else
     {
         auto success { open(argv[1]).and_then(parse) };
-        print_symbol_table(identifiers);
-        print_token_stream(token_stream);
+        //print_symbol_table(identifiers);
+        //print_token_stream(token_stream);
 
         if(not success)
             std::cout << success.error().msg << "\n";
+        else{
+            std::cout << "Lexical analysis completed successfully.\n";
+            std::cout << "Number of identifiers: " << identifiers.size() << "\n";
+            std::cout << "Number of tokens: " << token_stream.size() << "\n";
+        }
     }
 
     return 0;
