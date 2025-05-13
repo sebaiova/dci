@@ -13,6 +13,7 @@ enum lexeme
     RELATIONAL_OPERATOR,
     PROGRAM,
     DOT,
+    COMMA,
     COLON,
     SEMI_COLON,
     OPEN_PARENTHESIS,
