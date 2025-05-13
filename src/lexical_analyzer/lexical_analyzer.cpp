@@ -1,7 +1,7 @@
 #include "lexical_analyzer.hpp"
 #include "state.hpp"
 #include <iostream>
-
+#include <format>
 auto lexical_analyzer::operator>>(std::expected<output, error>& output) -> lexical_analyzer&
 {
     std::expected<state::result, error> current_state { state::result{} };
