@@ -1,12 +1,13 @@
 #pragma once 
 
 #include <iostream>
-#include "lexeme.hpp"
+#include <lexemes.hpp>
 #include "keywords.hpp"
 
-
-constexpr std::string_view to_string(lexeme l) {
-    switch (l) {
+constexpr std::string_view to_string(lexeme l) 
+{
+    switch (l) 
+    {
         case UNDETERMINATED: return "undetermined";
         case COMMENT: return "comment";
         case IDENTIFIER: return "identifier";

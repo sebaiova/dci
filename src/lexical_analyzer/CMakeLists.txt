@@ -7,3 +7,4 @@ add_library(
 )
 
 target_include_directories(lexical_analyzer INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(lexical_analyzer common)

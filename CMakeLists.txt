@@ -12,6 +12,8 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 enable_testing()
 
 add_subdirectory(src/app)
+add_subdirectory(src/common)
 add_subdirectory(src/lexical_analyzer)
+add_subdirectory(src/syntax_analyzer)
 add_subdirectory(tests)
 

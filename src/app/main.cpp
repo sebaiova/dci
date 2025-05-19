@@ -3,7 +3,7 @@
 #include <iostream>
 #include <expected>
 #include <lexical_analyzer.hpp>
-#include "debug.hpp"
+#include "logger.hpp"
 
 std::set<std::string> identifiers;
 std::list<lexeme> token_stream;
@@ -31,7 +31,7 @@ std::list<lexeme> token_stream;
             return std::unexpected(output.error());
         
         if(output->token != lexeme::COMMENT)
-            token_stream.push_front(output->token);
+            token_stream.push_back(output->token);
 
         if(output->attribute)
             identifiers.insert(*output->attribute);
@@ -52,17 +52,15 @@ int main(int argc, char** argv)
     else
     {
         auto success { open(argv[1]).and_then(parse) };
-        //print_symbol_table(identifiers);
-        //print_token_stream(token_stream);
 
         if(not success)
             std::cout << success.error().msg << "\n";
-        else{
+        else
             std::cout << "Lexical analysis completed successfully.\n";
-            std::cout << "Number of identifiers: " << identifiers.size() << "\n";
-            std::cout << "Number of tokens: " << token_stream.size() << "\n";
-        }
     }
+
+    log_token_stream(token_stream);
+    log_attribute_table(identifiers);
 
     return 0;
 }
