@@ -4,7 +4,7 @@
 #include <sstream>
 #include <set>
 #include <list>
-#include "lexeme.hpp"
+#include "lexemes.hpp"
 #include "error.hpp"
 
 struct lexical_analyzer
