@@ -1,5 +1,6 @@
 #include "parser.hpp"
 #include <lexical_analyzer.hpp>
+#include <syntax_analyzer.hpp>
 #include <iostream>
 #include "logger.hpp"
 
@@ -48,5 +49,6 @@ auto parser::lexical_analysis() -> std::expected<void, error>
 
 auto parser::syntax_analysis() -> std::expected<void, error>
 {
-    return std::expected<void, error>();
+    syntax_analyzer syntax(token_stream.begin());
+    return syntax.start();
 }
