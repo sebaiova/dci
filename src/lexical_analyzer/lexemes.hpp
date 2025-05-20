@@ -1,15 +1,18 @@
 #pragma once
 
-#include <string>
-
-enum lexeme
+enum class lexeme
 {
     UNDETERMINATED,
     COMMENT,
     IDENTIFIER, 
     NUMBER, 
     ASSIGNATION, 
-    ARITHMETIC_OPERATOR, 
+    ADD,
+    SUB,
+    MULT,
+    DIV,
+    AND,
+    OR,
     RELATIONAL_OPERATOR,
     PROGRAM,
     DOT,
@@ -36,5 +39,5 @@ enum lexeme
     BOOLEAN,
     TRUE,
     FALSE,
-    DIV
+    NOT,
 };

@@ -25,16 +25,6 @@ constexpr auto syntax_analyzer::match(lexeme expected) -> std::expected<void, er
     return std::unexpected(error(std::format("Sintax error. Expected '{}' but '{}' encountred", (int)expected, (int)*it)));
 }
 
-constexpr auto syntax_analyzer::match(std::expected<void, error>(*)(syntax_analyzer&)) -> std::expected<void, error>
-{
-    return std::unexpected(error("Panic."));
-}
-
-constexpr auto syntax_analyzer::match(beta_type) -> std::expected<void, error>
-{
-        return std::unexpected(error("Panic."));
-}
-
 auto syntax_analyzer::start() -> std::expected<void, error>
 {
     return rule<START>::run(*this);

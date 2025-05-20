@@ -2,6 +2,7 @@
 
 #include <lexemes.hpp>
 #include <error.hpp>
+#include "non_terminal.hpp"
 
 enum beta_type
 {
@@ -16,14 +17,7 @@ template<class T> struct beta
     const T value;
 
     static constexpr bool is_terminal() { return std::is_same_v<T, lexeme>; }
-    static constexpr bool is_recursive() { return std::is_same_v<T, beta_type>; }
-
-    std::expected<void, error> operator()(syntax_analyzer& p) const
-    {
-        if constexpr (not is_terminal() && not is_recursive())
-            return value(p);
-        return {};
-    }
+    static constexpr bool is_non_terminal() { return std::is_same_v<T, non_terminal>; }
 };
 
 template<typename... Rh> struct rules {};

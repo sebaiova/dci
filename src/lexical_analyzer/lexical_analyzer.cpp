@@ -20,7 +20,7 @@ auto lexical_analyzer::operator>>(std::expected<output, error>& output) -> lexic
             break;
         }
 
-        if(current_state->token)
+        if(current_state->token != lexeme::UNDETERMINATED)
         {
             backtrack();
             auto attribute { current_state->token==lexeme::IDENTIFIER ? std::make_optional(std::string(start, it)) : std::nullopt };

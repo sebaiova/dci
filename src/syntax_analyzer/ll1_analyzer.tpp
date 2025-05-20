@@ -2,7 +2,10 @@
 
 #include <expected>
 #include <error.hpp>
+#include "non_terminal.hpp"
 #include "ll1.hpp"
+#include "grammar.hpp"
+#include "syntax_analyzer.hpp"
 
 template<class T> struct first {};
 
@@ -45,17 +48,35 @@ template<> struct rule <rh<>>
     }
 };
 
+auto table(non_terminal nt, syntax_analyzer& p) -> std::expected<void, error>
+{
+    switch(nt)
+    {
+        #define X(name) \
+        case non_terminal::name : return rule<name>::run(p);
+        NON_TERMINAL_LIST
+        #undef X
+        default: return std::unexpected(error("Panic"));
+    }
+}
+
 template<beta...Bs> struct rule <rh<Bs...>>
 {
     static constexpr auto run(syntax_analyzer& p) -> std::expected<void, error>
     {
         std::expected<void, error> result;
-        if (((result = 
-                decltype(Bs)::is_terminal() ? (p.match(Bs.value)) : 
-                (decltype(Bs)::is_recursive() ? rule<rh<Bs...>>::run(p) : 
-                Bs(p)))
-            && ...))
-            ;
+
+        if (((result = [&p](){
+            if constexpr (decltype(Bs)::is_terminal())
+                return p.match(Bs.value);
+            else if constexpr (decltype(Bs)::is_non_terminal())
+                return table(Bs.value, p);
+            else 
+                return std::expected<void, error>{std::unexpected(error("Panic"))};
+        }()) && ...))
+                ;
+
         return result;
     }
 };
+

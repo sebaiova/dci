@@ -21,8 +21,8 @@ private:
 
     constexpr bool pre_analysis(lexeme expected) const;
     constexpr auto match(lexeme expected)  -> std::expected<void, error>;
-    constexpr auto match(beta_type)  -> std::expected<void, error>;
-    constexpr auto match(std::expected<void, error>(*)(syntax_analyzer&)) -> std::expected<void, error>;
+   // constexpr auto match(beta_type)  -> std::expected<void, error>;
+    //constexpr auto match(std::expected<void, error>(*)(syntax_analyzer&)) -> std::expected<void, error>;
 
     constexpr lexeme next_token() const;
 

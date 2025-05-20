@@ -9,9 +9,9 @@ namespace state
         {
             case 'a'...'z': return keyword_state<keywords>(c);
             case '0'...'9': return result { lexeme::UNDETERMINATED, state::number  };
-            case '+':   
-            case '-':      
-            case '*':       return result { lexeme::UNDETERMINATED, state::space<lexeme::ARITHMETIC_OPERATOR> };
+            case '+':       return result { lexeme::UNDETERMINATED, state::space<lexeme::ADD> };
+            case '-':       return result { lexeme::UNDETERMINATED, state::space<lexeme::SUB> };
+            case '*':       return result { lexeme::UNDETERMINATED, state::space<lexeme::MULT> };
             case '.':       return result { lexeme::UNDETERMINATED, state::space<lexeme::DOT> };
             case ',':       return result { lexeme::UNDETERMINATED, state::space<lexeme::COMMA> };
             case ';':       return result { lexeme::UNDETERMINATED, state::space<lexeme::SEMI_COLON> };
