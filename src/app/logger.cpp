@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include "strings.hpp"
+#include "lexical_analyzer.hpp"
 
 struct logger
 {
@@ -23,12 +24,12 @@ struct logger
     std::ofstream file;
 };
 
-void log_token_stream(const std::list<lexeme>& tokens)
+void log_token_stream(const std::list<symbol>& symbols)
 {
     logger log { "token_stream.log" };
     log << "Lexical Analyzer: Token Stream Output\n....\n";
-    for(auto& token : tokens)
-        log << to_string(token) << " \n" ;
+    for(auto& symbol : symbols)
+        log << to_string(symbol.token) << " \n" ;
 
     log << "......\n"; 
 }

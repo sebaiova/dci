@@ -7,21 +7,23 @@
 #include "lexemes.hpp"
 #include "error.hpp"
 
+struct symbol 
+{
+    lexeme token;
+    std::optional<std::string> attribute;
+    std::size_t col;
+    std::size_t line;
+};
+
 struct lexical_analyzer
 {
-    struct output
-    {
-        lexeme token;
-        std::optional<std::string> attribute;
-    };
-
     lexical_analyzer(const std::string& text) : 
         buffer { construct_buffer(text) }
     {
         it = buffer.begin();
     }
 
-    [[nodiscard]] auto operator>>(std::expected<output, error>& other) -> lexical_analyzer&;
+    [[nodiscard]] auto operator>>(std::expected<symbol, error>& other) -> lexical_analyzer&;
 
     operator bool()
     {

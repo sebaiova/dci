@@ -16,11 +16,13 @@
 
 int main(int argc, char** argv)
 {
-    if(argc<2)
+    if(argc<1)
         std::cout << "No input file\n";
     else 
     {
-        auto success { open(argv[1]).and_then([](auto str){ 
+        auto success { open("../../example.txt").and_then([](auto str){ 
+             
+       // auto success { open(argv[1]).and_then([](auto str){ 
                 parser p(str); 
                 return p.run(); 
             })};

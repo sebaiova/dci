@@ -7,9 +7,9 @@
 #include "grammar.hpp"
 #include "syntax_analyzer.hpp"
 
-template<class T> struct first {};
+template<class T> struct firsta {};
 
-template<> struct first<rh<>>
+template<> struct firsta<rh<>>
 {
     static constexpr lexeme value()
     {
@@ -17,15 +17,26 @@ template<> struct first<rh<>>
     }
 };
 
-template<beta First, beta...Rest> struct first<rh<First, Rest...>>
+template<beta First, beta...Rest> struct firsta<rh<First, Rest...>>
 {
     static constexpr lexeme value()
     {
         if constexpr (decltype(First)::is_terminal())
             return First.value;
-        return first<rh<Rest...>>::value();
+        return firsta<rh<Rest...>>::value();
     };
 };
+
+template<class T> struct pre_analysis;
+template<beta<lexeme>...Bts> struct pre_analysis<rh<Bts...>>
+{
+    static constexpr bool run(syntax_analyzer& p)
+    {
+        return (p.pre_analysis(Bts.value) || ...);
+    }
+};
+
+
 
 template<class...RHs> struct rule <rules<RHs...>>
 {
@@ -33,10 +44,10 @@ template<class...RHs> struct rule <rules<RHs...>>
     {
         std::expected<void, error> result;
 
-        if (((p.pre_analysis(first<RHs>::value()) && (result = rule<RHs>::run(p), true)) || ...) && true)
+        if (((pre_analysis< typename get_firsts<RHs>::lex >::run(p) && (result = rule<RHs>::run(p), true)) || ...) && true)
             return result;
 
-        return std::unexpected(error(std::format("Syntax Error - Unexpected token '{}'.", (int)p.next_token())));
+        return std::unexpected(error());
     }
 };
 

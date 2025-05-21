@@ -2,6 +2,7 @@
 
 #include "ll1.hpp"
 #include "non_terminal.hpp"
+#include "firsts.hpp"
 
 #define T(TOKEN) lexeme::TOKEN 
 #define N(TOKEN) non_terminal::TOKEN
@@ -13,7 +14,7 @@ using PARAMETRO_FORMAL =
 
 using PARAMETRO_FORMAL1 = 
 rules<
-    rh<T(COMMA), N(PARAMETRO_FORMAL), N(PARAMETRO_FORMAL1)>,
+    rh<T(SEMI_COLON), N(PARAMETRO_FORMAL), N(PARAMETRO_FORMAL1)>,
     rh<>
 >;
 
@@ -101,7 +102,13 @@ using SENTENCIA_COMPUESTA =
 
 using EXPRESION = 
     rules<
-        rh<N(EXPRESION_SIMPLE), T(RELATIONAL_OPERATOR), N(EXPRESION_SIMPLE)>
+        rh<N(EXPRESION_SIMPLE), N(EXPRESION1)>
+    >;
+
+using EXPRESION1 =  
+    rules<
+        rh<T(RELATIONAL_OPERATOR), N(EXPRESION_SIMPLE)>,
+        rh<>
     >;
 
 using EXPRESION_SIMPLE = 
@@ -184,7 +191,8 @@ using SUBRUTINA =
 
 using AREA_VARIABLES =
     rules<
-        rh<T(VAR), N(LISTA_DECLARACION_VARIABLES)>
+        rh<T(VAR), N(LISTA_DECLARACION_VARIABLES)>,
+        rh<>
     >;
 
 using AREA_SUBRUTINAS = 
@@ -204,4 +212,75 @@ using PROGRAMA =
     >;
 
 using START = PROGRAMA;
+
+
+template <class T> struct search_lexemes {};
+
+template <> struct search_lexemes<rh<>>
+{
+    using lex = rh<lexeme::UNDETERMINATED>;
+};
+
+template <beta First, beta...Rest> struct search_lexemes<rh<First, Rest...>>
+{
+    using lex = rh<First>;
+};
+
+template<class T> struct deep_search 
+{
+    using lex = rh<lexeme::UNDETERMINATED>; 
+};
+
+template<typename ...> struct rh_concat;
+
+template<> struct rh_concat<> 
+{ 
+    using type = rh<>; 
+};
+
+template<beta... Bs> struct rh_concat<rh<Bs...>> 
+{ 
+    using type = rh<Bs...>; 
+};
+
+template<beta... Bs1, beta... Bs2, typename... Rest> struct rh_concat<rh<Bs1...>, rh<Bs2...>, Rest...> 
+{
+    using type = typename rh_concat<rh<Bs1..., Bs2...>, Rest...>::type;
+};
+
+template <class...RHs> struct search_lexemes<rules<RHs...>> 
+{
+    using lex = typename rh_concat<typename search_lexemes<RHs>::lex...>::type;
+};
+
+template <> struct search_lexemes<rules<>>
+{
+    using lex = rh<>;
+};
+
+template<beta Bt> struct transform
+{
+    using type = decltype([](){
+        if constexpr (decltype(Bt)::is_terminal())
+            return rh<Bt>{};
+        else if constexpr (decltype(Bt)::is_non_terminal()) 
+            return (typename first<Bt>::get){};
+        else 
+            return rh<Bt>{};
+    }());
+};
+
+template <beta...Bts> struct deep_search<rh<Bts...>>
+{
+    using lex = typename rh_concat<typename transform<Bts>::type...>::type;
+};
+
+
+
+
+template<class T> struct get_firsts
+{
+    using tmp = typename search_lexemes<T>::lex;
+    using lex = typename deep_search<tmp>::lex;
+};
 

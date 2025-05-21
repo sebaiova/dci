@@ -29,7 +29,7 @@ auto parser::run() -> std::expected<void, error>
 auto parser::lexical_analysis() -> std::expected<void, error>
 {
     lexical_analyzer lexical(str);
-    std::expected<lexical_analyzer::output, error> output;
+    std::expected<symbol, error> output;
 
     while(lexical >> output)
     {
@@ -37,7 +37,7 @@ auto parser::lexical_analysis() -> std::expected<void, error>
             return std::unexpected(output.error());
         
         if(output->token != lexeme::COMMENT)
-            token_stream.push_back(output->token);
+            token_stream.push_back(*output);
 
         if(output->attribute)
             attribte_table.insert(*output->attribute);
@@ -49,6 +49,11 @@ auto parser::lexical_analysis() -> std::expected<void, error>
 
 auto parser::syntax_analysis() -> std::expected<void, error>
 {
-    syntax_analyzer syntax(token_stream.begin());
-    return syntax.start();
+    syntax_analyzer syntax(token_stream);
+    
+    if(auto result = syntax.start(); not result)
+        return result;
+    
+    std::cout << "Syntax analysis completed successfully.\n";
+    return {};
 }

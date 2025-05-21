@@ -3,11 +3,14 @@
 #include <iostream>
 #include <format>
 
-auto lexical_analyzer::operator>>(std::expected<output, error>& output) -> lexical_analyzer&
+auto lexical_analyzer::operator>>(std::expected<symbol, error>& output) -> lexical_analyzer&
 {
     std::expected<state::result, error> current_state { state::result{} };
 
     skip_spaces();
+
+    output->line=line;
+    output->col=col;
 
     start = it;
     while(it != buffer.end())
@@ -16,7 +19,7 @@ auto lexical_analyzer::operator>>(std::expected<output, error>& output) -> lexic
 
         if(!(current_state = current_state->next_transition(c)))
         {
-            output = std::unexpected(error(std::format("Unexpected character '{}' at (line: {}, col: {}).", c, line, col)));
+            output = std::unexpected(error(std::format("Lexical Error - Unexpected character '{}' at (line: {}, col: {}).", c, line, col)));
             break;
         }
 
@@ -24,7 +27,8 @@ auto lexical_analyzer::operator>>(std::expected<output, error>& output) -> lexic
         {
             backtrack();
             auto attribute { current_state->token==lexeme::IDENTIFIER ? std::make_optional(std::string(start, it)) : std::nullopt };
-            output = { current_state->token, attribute };
+            output->token = current_state->token;
+            output->attribute = attribute;
             break;
         }
     }

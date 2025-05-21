@@ -5,27 +5,21 @@
 #include <lexemes.hpp>
 #include <error.hpp>
 #include "ll1.hpp"
+#include <lexical_analyzer.hpp>
 
 struct syntax_analyzer 
 {
-    syntax_analyzer(std::list<lexeme>::const_iterator it) : it { it }
-    {
-
-    }
-
+    syntax_analyzer(const std::list<symbol>& token_stream);
     std::expected<void, error> start();
+    constexpr bool pre_analysis(lexeme expected) const;
 
 private:
 
-    std::list<lexeme>::const_iterator it;
+    std::list<symbol>::const_iterator end;
+    std::list<symbol>::const_iterator it;
 
-    constexpr bool pre_analysis(lexeme expected) const;
     constexpr auto match(lexeme expected)  -> std::expected<void, error>;
-   // constexpr auto match(beta_type)  -> std::expected<void, error>;
-    //constexpr auto match(std::expected<void, error>(*)(syntax_analyzer&)) -> std::expected<void, error>;
-
     constexpr lexeme next_token() const;
-
 
     template<class Rule> friend struct rule;
 };

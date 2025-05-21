@@ -6,6 +6,7 @@
 #include <set>
 #include <error.hpp>
 #include <lexemes.hpp>
+#include <lexical_analyzer.hpp>
 
 struct parser 
 {
@@ -20,6 +21,6 @@ struct parser
     auto syntax_analysis() -> std::expected<void, error>;
 
     const std::string& str;
-    std::list<lexeme> token_stream {};
+    std::list<symbol> token_stream {};
     std::set<std::string> attribte_table {};
 };

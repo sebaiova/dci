@@ -1,8 +1,4 @@
-as qwasd while 
-12diva55ddd if0
-  as then () as
-a: fa e    e e   
-fe <>=:= a fg<=e as
-   e0f:=f<>}eee
-{fe <>=:= a fg<=e as
-   @e0f:=f<>}eee}
+program MyProgram;
+begin
+    x := 4*4;
+end.
