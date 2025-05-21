@@ -19,7 +19,7 @@ auto lexical_analyzer::operator>>(std::expected<symbol, error>& output) -> lexic
 
         if(!(current_state = current_state->next_transition(c)))
         {
-            output = std::unexpected(error(std::format("Lexical Error - Unexpected character '{}' at (line: {}, col: {}).", c, line, col)));
+            output = std::unexpected(error(error::LEXICAL, c, line, col));
             break;
         }
 

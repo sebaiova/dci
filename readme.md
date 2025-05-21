@@ -1,4 +1,4 @@
-# Mini Pascal Compiler (1% progress)
+# Mini Pascal Compiler (2% progress)
 
 ## Compile
 

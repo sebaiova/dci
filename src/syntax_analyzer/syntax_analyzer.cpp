@@ -2,7 +2,7 @@
 #include <format>
 #include <variant>
 #include "syntax_analyzer.hpp"
-#include "ll1_analyzer.tpp"
+#include "ll1_parser.tpp"
 #include "grammar.hpp"
 #include <error.hpp>
 
@@ -30,7 +30,7 @@ constexpr auto syntax_analyzer::match(lexeme expected) -> std::expected<void, er
         it++;
         return {};
     }
-    return std::unexpected(error(std::format("Sintax Error - Expected '{}')", (int)expected)));
+    return std::unexpected(error());
 }
 
 auto syntax_analyzer::start() -> std::expected<void, error>
@@ -40,12 +40,12 @@ auto syntax_analyzer::start() -> std::expected<void, error>
     if(not result)
     {
         if(it==end)
-            return std::unexpected(error("Syntax Error - End of file, incomplete program."));
-        return std::unexpected(error(std::format("Syntax Error - Unexpected token '{}' at (line: {}, col: {})", (int)it->token, it->line, it->col)));    
+            return std::unexpected(error(error::SYNTAX_EOF));
+        return std::unexpected(error(error::SYNTAX, (int)it->token, it->line, it->col));    
     }
 
     if(it!=end)
-        return std::unexpected(error("Syntax Error - Unexpected token at end of program."));
+        return std::unexpected(error(error::SYNTAX_OVER));
 
     return result;
 }

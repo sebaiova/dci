@@ -78,14 +78,6 @@ namespace
                 return state::result{ Keyword::token, state::start };
         }
     };
-
-    template<> struct keyword_process_end<std::tuple<>>
-    {
-        static constexpr auto call(char c) -> std::expected<state::result, error> 
-        {  
-            return std::unexpected(error("Report me"));
-        }
-    };
 }
 
 namespace state

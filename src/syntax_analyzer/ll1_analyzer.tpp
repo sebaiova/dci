@@ -1,93 +1,73 @@
-#pragma once
+#pragma once 
 
-#include <expected>
-#include <error.hpp>
-#include "non_terminal.hpp"
 #include "ll1.hpp"
-#include "grammar.hpp"
-#include "syntax_analyzer.hpp"
+#include "non_terminal.hpp"
+#include "firsts.hpp"
 
-template<class T> struct firsta {};
+template <class T> struct search_lexemes {};
 
-template<> struct firsta<rh<>>
+template <> struct search_lexemes<rh<>>
 {
-    static constexpr lexeme value()
-    {
-        return lexeme::UNDETERMINATED;
-    }
+    using lex = rh<lexeme::UNDETERMINATED>;
 };
 
-template<beta First, beta...Rest> struct firsta<rh<First, Rest...>>
+template <beta First, beta...Rest> struct search_lexemes<rh<First, Rest...>>
 {
-    static constexpr lexeme value()
-    {
-        if constexpr (decltype(First)::is_terminal())
-            return First.value;
-        return firsta<rh<Rest...>>::value();
-    };
+    using lex = rh<First>;
 };
 
-template<class T> struct pre_analysis;
-template<beta<lexeme>...Bts> struct pre_analysis<rh<Bts...>>
+template<class T> struct deep_search 
 {
-    static constexpr bool run(syntax_analyzer& p)
-    {
-        return (p.pre_analysis(Bts.value) || ...);
-    }
+    using lex = rh<lexeme::UNDETERMINATED>; 
 };
 
+template<typename ...> struct rh_concat;
 
-
-template<class...RHs> struct rule <rules<RHs...>>
-{
-    static constexpr auto run(syntax_analyzer& p) -> std::expected<void, error>
-    {
-        std::expected<void, error> result;
-
-        if (((pre_analysis< typename get_firsts<RHs>::lex >::run(p) && (result = rule<RHs>::run(p), true)) || ...) && true)
-            return result;
-
-        return std::unexpected(error());
-    }
+template<> struct rh_concat<> 
+{ 
+    using type = rh<>; 
 };
 
-template<> struct rule <rh<>>
-{
-    static constexpr auto run(syntax_analyzer& p) -> std::expected<void, error>
-    {
-        return {};
-    }
+template<beta... Bs> struct rh_concat<rh<Bs...>> 
+{ 
+    using type = rh<Bs...>; 
 };
 
-auto table(non_terminal nt, syntax_analyzer& p) -> std::expected<void, error>
+template<beta... Bs1, beta... Bs2, typename... Rest> struct rh_concat<rh<Bs1...>, rh<Bs2...>, Rest...> 
 {
-    switch(nt)
-    {
-        #define X(name) \
-        case non_terminal::name : return rule<name>::run(p);
-        NON_TERMINAL_LIST
-        #undef X
-        default: return std::unexpected(error("Panic"));
-    }
-}
+    using type = typename rh_concat<rh<Bs1..., Bs2...>, Rest...>::type;
+};
 
-template<beta...Bs> struct rule <rh<Bs...>>
+template <class...RHs> struct search_lexemes<rules<RHs...>> 
 {
-    static constexpr auto run(syntax_analyzer& p) -> std::expected<void, error>
-    {
-        std::expected<void, error> result;
+    using lex = typename rh_concat<typename search_lexemes<RHs>::lex...>::type;
+};
 
-        if (((result = [&p](){
-            if constexpr (decltype(Bs)::is_terminal())
-                return p.match(Bs.value);
-            else if constexpr (decltype(Bs)::is_non_terminal())
-                return table(Bs.value, p);
-            else 
-                return std::expected<void, error>{std::unexpected(error("Panic"))};
-        }()) && ...))
-                ;
+template <> struct search_lexemes<rules<>>
+{
+    using lex = rh<>;
+};
 
-        return result;
-    }
+template<beta Bt> struct transform
+{
+    using type = decltype([](){
+        if constexpr (decltype(Bt)::is_terminal())
+            return rh<Bt>{};
+        else if constexpr (decltype(Bt)::is_non_terminal()) 
+            return (typename first<Bt>::get){};
+        else 
+            return rh<Bt>{};
+    }());
+};
+
+template <beta...Bts> struct deep_search<rh<Bts...>>
+{
+    using lex = typename rh_concat<typename transform<Bts>::type...>::type;
+};
+
+template<class T> struct get_firsts
+{
+    using tmp = typename search_lexemes<T>::lex;
+    using lex = typename deep_search<tmp>::lex;
 };
 

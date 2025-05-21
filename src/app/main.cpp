@@ -2,6 +2,7 @@
 #include <sstream>
 #include <iostream>
 #include <expected>
+#include "print_error.hpp"
 #include "parser.hpp"
 
 [[nodiscard]] auto open(const std::string& file_name) -> std::expected<std::string, error>
@@ -28,7 +29,7 @@ int main(int argc, char** argv)
             })};
 
         if(not success)
-            std::cout << success.error().msg << "\n";
+            print_error(success.error());
     }
 
     return 0;

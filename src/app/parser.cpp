@@ -34,7 +34,7 @@ auto parser::lexical_analysis() -> std::expected<void, error>
     while(lexical >> output)
     {
         if(not output)
-            return std::unexpected(output.error());
+            return std::unexpected(error(output.error()));
         
         if(output->token != lexeme::COMMENT)
             token_stream.push_back(*output);
