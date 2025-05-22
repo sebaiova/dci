@@ -1,7 +1,7 @@
 program MyProgram;
 var a, b, c: Integer;
     d: Boolean;
-function MyProcedure(a, b: Integer; c: Boolean) : Integer;
+function MyProcedure(a, b: Integer, c: Boolean) : Integer;
 begin  
     MyProcedure := a+b;
 end;

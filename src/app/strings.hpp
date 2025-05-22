@@ -19,6 +19,7 @@ constexpr std::string_view to_string(lexeme l)
         case lexeme::RELATIONAL_OPERATOR: return "relational_operator";
         case lexeme::PROGRAM: return "program";
         case lexeme::DOT: return ".";
+        case lexeme::COMMA: return ",";
         case lexeme::COLON: return ":";
         case lexeme::SEMI_COLON: return ";";
         case lexeme::OPEN_PARENTHESIS: return "open_parenthesis";
