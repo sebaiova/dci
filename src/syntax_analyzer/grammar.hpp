@@ -50,7 +50,7 @@ rules<
 
 using LISTA_SENTENCIAS = 
 rules<
-    rh<N(SENTENCIA_SIMPLE), T(SEMI_COLON) ,N(LISTA_SENTENCIAS)>,
+    rh<N(SENTENCIA_SIMPLE), N(LISTA_SENTENCIAS)>,
     rh<>
 >;
 
@@ -86,7 +86,7 @@ using SENTENCIA_SIMPLE =
     rules<
         rh<N(SENTENCIA_CONDICIONAL)>,
         rh<N(SENTENCIA_REPETITIVA)>,
-        rh<T(IDENTIFIER), N(SENTENCIA_SIMPLE1)>
+        rh<T(IDENTIFIER), N(SENTENCIA_SIMPLE1), T(SEMI_COLON)>
     >;
 
 using SENTENCIA_SIMPLE1 = 
