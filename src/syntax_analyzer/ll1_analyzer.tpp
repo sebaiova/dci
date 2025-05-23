@@ -45,7 +45,7 @@ template <class...RHs> struct search_lexemes<rules<RHs...>>
 
 template <> struct search_lexemes<rules<>>
 {
-    using lex = rh<>;
+    using lex = rh<lexeme::UNDETERMINATED>;
 };
 
 template<beta Bt> struct transform

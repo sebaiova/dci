@@ -2,10 +2,12 @@ program MyProgram;
 var a, b, c: Integer;
     d: Boolean;
 function MyProcedure(a, b: Integer; c: Boolean) : Integer;
-begin  
+begin 
+    c := 3;
     MyProcedure := a+b;
 end;
 begin
+    MyProcedure(4);
     x := 2*4;
     while x<3 do 
       a := 4*4;

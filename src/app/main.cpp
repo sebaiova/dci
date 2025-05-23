@@ -17,7 +17,7 @@
 
 int main(int argc, char** argv)
 {
-    if(argc<1)
+    if(argc<2)
         std::cout << "No input file\n";
     else 
     {
