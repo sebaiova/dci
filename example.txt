@@ -1,13 +1,13 @@
 program MyProgram;
 var a, b, c: Integer;
     d: Boolean;
-function MyProcedure(a, b: Integer, c: Boolean) : Integer;
+function MyProcedure(a, b: Integer; c: Boolean) : Integer;
 begin  
     MyProcedure := a+b;
 end;
 begin
     x := 2*4;
-    while x=3 do 
+    while x<3 do 
       a := 4*4;
     if 3=2 then
      a := 2;

@@ -24,7 +24,7 @@ template<class...RHs> struct rule <rules<RHs...>>
     {
         std::expected<void, error> result;
 
-        if (((pre_analysis< typename get_firsts<RHs>::lex >::run(p) && (result = rule<RHs>::run(p), true)) || ...) && true)
+        if (((pre_analysis< typename get_firsts<RHs>::lex >::run(p) && (result = rule<RHs>::run(p), true)) || ...))
             return result;
 
         return std::unexpected(error());
