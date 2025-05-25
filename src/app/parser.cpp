@@ -17,43 +17,8 @@ parser::~parser()
 
 auto parser::run() -> std::expected<void, error>
 {
-    if(auto result = lexical_analysis(); !result)
-        return result;
+    auto lexical { lexical_analyzer(str, token_stream, attribte_table) };
+    auto syntax  { syntax_analyzer(lexical) };
 
-    if(auto result = syntax_analysis(); !result)
-        return result;
-
-    return {};
-}
-
-auto parser::lexical_analysis() -> std::expected<void, error>
-{
-    lexical_analyzer lexical(str);
-    std::expected<symbol, error> output;
-
-    while(lexical >> output)
-    {
-        if(not output)
-            return std::unexpected(error(output.error()));
-        
-        if(output->token != lexeme::COMMENT)
-            token_stream.push_back(*output);
-
-        if(output->attribute)
-            attribte_table.insert(*output->attribute);
-    }
-
-    std::cout << "Lexical analysis completed successfully.\n";
-    return {};
-}
-
-auto parser::syntax_analysis() -> std::expected<void, error>
-{
-    syntax_analyzer syntax(token_stream);
-    
-    if(auto result = syntax.start(); not result)
-        return result;
-    
-    std::cout << "Syntax analysis completed successfully.\n";
-    return {};
+    return syntax.start();
 }

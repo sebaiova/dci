@@ -17,9 +17,6 @@ struct parser
 
     private:
 
-    auto lexical_analysis() -> std::expected<void, error>;
-    auto syntax_analysis() -> std::expected<void, error>;
-
     const std::string& str;
     std::list<symbol> token_stream {};
     std::set<std::string> attribte_table {};

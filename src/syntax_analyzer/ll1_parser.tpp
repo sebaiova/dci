@@ -22,7 +22,6 @@ template<class...RHs> struct rule <rules<RHs...>>
     static constexpr auto run(syntax_analyzer& p) -> std::expected<void, error>
     {
         std::expected<void, error> result;
-
         if (((pre_analysis< typename get_firsts<RHs>::lex >::run(p) && (result = rule<RHs>::run(p), true)) || ...))
             return result;
 

@@ -9,17 +9,18 @@
 
 struct syntax_analyzer 
 {
-    syntax_analyzer(const std::list<symbol>& token_stream);
+    syntax_analyzer(lexical_analyzer& lexical);
     std::expected<void, error> start();
     constexpr bool pre_analysis(lexeme expected) const;
 
 private:
 
-    std::list<symbol>::const_iterator end;
-    std::list<symbol>::const_iterator it;
-
     constexpr auto match(lexeme expected)  -> std::expected<void, error>;
-    constexpr lexeme next_token() const;
+    constexpr auto demand_token() -> std::expected<void, error>;
+    constexpr void flush_token();
+
+    std::optional<lexeme> current_token {std::nullopt};
+    lexical_analyzer& lexical;
 
     template<class Rule> friend struct rule;
 };

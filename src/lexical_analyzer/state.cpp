@@ -26,6 +26,7 @@ namespace state
             case ' ':
             case '\n':
             case '\t':      return result { lexeme::UNDETERMINATED, state::start };
+            case '\x1A':    return result { lexeme::UNDETERMINATED, state::space<lexeme::END_OF_FILE> }; 
             default:        return { std::unexpected( error()) };
         }
     };

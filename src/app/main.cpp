@@ -21,13 +21,16 @@ int main(int argc, char** argv)
         std::cout << "No input file\n";
     else 
     {
-        auto success { open(argv[1]).and_then([](auto str){ 
-                parser p(str); 
-                return p.run(); 
-            })};
+     auto success { open(argv[1]).and_then([](auto str){ 
+     //auto success { open("../../example.txt").and_then([](auto str){ 
+        parser p(str); 
+            return p.run(); 
+        })};
 
         if(not success)
             print_error(success.error());
+        else 
+            std::cout << "Parse completed successfully!\n";
     }
     return 0;
 }

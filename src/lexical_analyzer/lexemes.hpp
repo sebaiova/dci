@@ -40,4 +40,5 @@ enum class lexeme
     TRUE,
     FALSE,
     NOT,
+    END_OF_FILE,
 };

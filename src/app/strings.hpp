@@ -43,6 +43,7 @@ constexpr std::string_view to_string(lexeme l)
         case lexeme::TRUE: return "true";
         case lexeme::FALSE: return "false";
         case lexeme::DIV: return "div";
+        case lexeme::END_OF_FILE: return "End of file";
         default: return "unknown";
     }
 }

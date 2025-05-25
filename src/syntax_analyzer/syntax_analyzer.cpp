@@ -6,46 +6,49 @@
 #include "grammar.hpp"
 #include <error.hpp>
 
-syntax_analyzer::syntax_analyzer(const std::list<symbol>& token_stream) :
-    it { token_stream.begin() }, end { token_stream.end() }
+syntax_analyzer::syntax_analyzer(lexical_analyzer& lexical) :
+    lexical { lexical }
 {
 
 }
 
-constexpr lexeme syntax_analyzer::next_token() const
+constexpr auto syntax_analyzer::demand_token() -> std::expected<void, error>
 {
-    return it->token;
+    auto result = lexical.next_token();
+    if(result)
+    {
+        current_token = result.value().token;
+        return {};
+    }
+    return std::unexpected(result.error());
 }
 
 constexpr bool syntax_analyzer::pre_analysis(lexeme expected) const
 {
-    return it!=end && ( expected == it->token || expected == lexeme::UNDETERMINATED );
+    return ( expected == current_token || expected == lexeme::UNDETERMINATED );
 }
 
 constexpr auto syntax_analyzer::match(lexeme expected) -> std::expected<void, error>
 {
+    if (expected != current_token)
+        return std::unexpected(error(error::SYNTAX, (int)*current_token, lexical.get_line(), lexical.get_col())); 
 
-    if (it!=end && expected == it->token)
-    {
-        it++;
-        return {};
-    }
-    return std::unexpected(error());
+    if(auto result = demand_token(); not result)
+        return result;
+
+    return {}; 
 }
 
 auto syntax_analyzer::start() -> std::expected<void, error>
 {
-    auto result { rule<START>::run(*this)  };
-    
-    if(not result)
-    {
-        if(it==end)
-            return std::unexpected(error(error::SYNTAX_EOF));
-        return std::unexpected(error(error::SYNTAX, (int)it->token, it->line, it->col));    
-    }
+    if(auto result = demand_token(); not result)
+        return result;
 
-    if(it!=end)
+    if(auto result = rule<START>::run(*this); not result)
+        return result;    
+
+    if(current_token!=lexeme::END_OF_FILE)
         return std::unexpected(error(error::SYNTAX_OVER));
 
-    return result;
+    return {};
 }

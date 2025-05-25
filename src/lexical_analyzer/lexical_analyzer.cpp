@@ -13,13 +13,11 @@ auto lexical_analyzer::next_token() -> std::expected<symbol, error>
 {
     symbol output;
     std::expected<state::result, error> current_state { state::result{} };
-
     skip_spaces();
-
     output.line=line;
     output.col=col;
-
     start = it;
+    
     while(it != buffer.end())
     {
         char c = next_char();
@@ -27,16 +25,23 @@ auto lexical_analyzer::next_token() -> std::expected<symbol, error>
         if(!(current_state = current_state->next_transition(c)))
             return std::unexpected(error(error::LEXICAL, c, line, col));
         
+        if(current_state->token == lexeme::COMMENT)
+        {
+            backtrack();
+            return next_token();
+        }
+
         if(current_state->token != lexeme::UNDETERMINATED)
         {
             backtrack();
             auto attribute { current_state->token==lexeme::IDENTIFIER ? std::make_optional(std::string(start, it)) : std::nullopt };
             output.token = current_state->token;
             output.attribute = attribute;
+            token_register(output);
             return output;
         }
     }
-    return std::unexpected(error());
+    return std::unexpected(error(error::SYNTAX_EOF));
 }
 
 char lexical_analyzer::next_char()
@@ -65,4 +70,12 @@ void lexical_analyzer::skip_spaces()
         it++;
         col++;
     }
+}
+
+void lexical_analyzer::token_register(const symbol& s) 
+{   
+    token_stream.push_back(s);
+
+    if(s.attribute)
+        attribute_table.insert(*s.attribute);
 }
