@@ -24,6 +24,7 @@ struct lexical_analyzer
     }
 
     [[nodiscard]] auto operator>>(std::expected<symbol, error>& other) -> lexical_analyzer&;
+    [[nodiscard]] auto next_token() -> std::expected<symbol, error>;
 
     operator bool()
     {
