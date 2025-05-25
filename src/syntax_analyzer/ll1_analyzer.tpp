@@ -2,27 +2,9 @@
 
 #include "ll1.hpp"
 #include "non_terminal.hpp"
-#include "firsts.hpp"
-
-template <class T> struct search_lexemes {};
-
-template <> struct search_lexemes<rh<>>
-{
-    using lex = rh<lexeme::UNDETERMINATED>;
-};
-
-template <beta First, beta...Rest> struct search_lexemes<rh<First, Rest...>>
-{
-    using lex = rh<First>;
-};
-
-template<class T> struct deep_search 
-{
-    using lex = rh<lexeme::UNDETERMINATED>; 
-};
+#include "grammar.hpp"
 
 template<typename ...> struct rh_concat;
-
 template<> struct rh_concat<> 
 { 
     using type = rh<>; 
@@ -38,36 +20,65 @@ template<beta... Bs1, beta... Bs2, typename... Rest> struct rh_concat<rh<Bs1...>
     using type = typename rh_concat<rh<Bs1..., Bs2...>, Rest...>::type;
 };
 
-template <class...RHs> struct search_lexemes<rules<RHs...>> 
+template <class T> struct head{};
+template <class... RHs> struct head<rules<RHs...>>
 {
-    using lex = typename rh_concat<typename search_lexemes<RHs>::lex...>::type;
+    using type = typename rh_concat<typename head<RHs>::type...>::type;
 };
 
-template <> struct search_lexemes<rules<>>
+template <beta First, beta...Rest> struct head<rh<First, Rest...>>
 {
-    using lex = rh<lexeme::UNDETERMINATED>;
+    using type = rh<First>;
+};
+
+template <> struct head<rh<>>
+{
+    using type = rh<lexeme::UNDETERMINATED>;
+};
+
+template <beta Bt> struct ff 
+{
+    static consteval auto get()
+    {
+        #define X(name) \
+            if constexpr (Bt.value == non_terminal::name) return typename head<name>::type{};
+        NON_TERMINAL_LIST
+        #undef X
+    }
 };
 
 template<beta Bt> struct transform
 {
-    using type = decltype([](){
-        if constexpr (decltype(Bt)::is_terminal())
+    static consteval auto get()
+    {
+        if constexpr( decltype(Bt)::is_terminal() )
             return rh<Bt>{};
-        else if constexpr (decltype(Bt)::is_non_terminal()) 
-            return (typename first<Bt>::get){};
+        else if constexpr ( decltype(Bt)::is_non_terminal() ) 
+            return ff<Bt>::get();
         else 
-            return rh<Bt>{};
-    }());
+            return rh<Bt>{};    
+    };
 };
 
+template<beta...Bts> struct transform_all
+{
+    using type = typename rh_concat<decltype(transform<Bts>::get())...>::type;
+};
+
+template<class T> struct deep_search;
 template <beta...Bts> struct deep_search<rh<Bts...>>
 {
-    using lex = typename rh_concat<typename transform<Bts>::type...>::type;
+    static consteval auto get()
+    {
+        if constexpr (( decltype(Bts)::is_terminal() && ... ))
+            return rh<Bts...>{};
+        else 
+            return deep_search<typename transform_all<Bts...>::type>::get();
+    }
 };
 
 template<class T> struct get_firsts
 {
-    using tmp = typename search_lexemes<T>::lex;
-    using lex = typename deep_search<tmp>::lex;
+    using head = typename head<T>::type;
+    using lex = decltype(deep_search<head>::get());
 };
-

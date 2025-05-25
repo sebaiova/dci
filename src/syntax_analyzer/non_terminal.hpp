@@ -31,7 +31,6 @@
     X(EXPRESION_SIMPLE)\
     X(FACTOR)\
     X(FACTOR1)\
-    X(SIGNO)\
     X(DATA_TYPE)\
     X(TERMINO)\
     X(OPERADOR_FACTORES)\

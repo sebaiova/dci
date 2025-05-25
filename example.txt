@@ -1,4 +1,9 @@
 program MyProgram;
+begin
+    hola();
+end.
+
+{program MyProgram;
 var a, b, c: Integer;
     d: Boolean;
 function MyProcedure(a, b: Integer; c: Boolean) : Integer;
@@ -7,7 +12,7 @@ begin
     MyProcedure := a+b;
 end;
 begin
-    MyProcedure(4);
+    MyProcedure(4*2);
     x := 2*4;
     while x<3 do 
       a := 4*4;
@@ -21,4 +26,4 @@ begin
             a := f;
         else 
             b := 4;
-end.
+end.}

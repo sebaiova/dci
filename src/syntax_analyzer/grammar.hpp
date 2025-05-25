@@ -2,7 +2,6 @@
 
 #include "ll1.hpp"
 #include "non_terminal.hpp"
-#include "firsts.hpp"
 
 #define T(TOKEN) lexeme::TOKEN 
 #define N(TOKEN) non_terminal::TOKEN
@@ -113,7 +112,9 @@ using EXPRESION1 =
 
 using EXPRESION_SIMPLE = 
     rules<
-        rh<N(SIGNO), N(TERMINO), N(LISTA_TERMINOS)>
+        rh<T(ADD), N(TERMINO), N(LISTA_TERMINOS)>,
+        rh<T(SUB), N(TERMINO), N(LISTA_TERMINOS)>,
+        rh<N(TERMINO), N(LISTA_TERMINOS)>
     >;
 
 using FACTOR = 
@@ -134,13 +135,6 @@ using DATA_TYPE =
     rules<
         rh<T(INTEGER)>,
         rh<T(BOOLEAN)>
-    >;
-
-using SIGNO = 
-    rules<
-        rh<T(ADD)>,
-        rh<T(SUB)>,
-        rh<>
     >;
 
 using TERMINO = 

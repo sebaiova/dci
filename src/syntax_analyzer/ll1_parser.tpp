@@ -7,7 +7,6 @@
 #include "ll1_analyzer.tpp"
 #include "grammar.hpp"
 #include "syntax_analyzer.hpp"
-#include "firsts.hpp"
 
 template<class T> struct pre_analysis;
 template<beta<lexeme>...Bts> struct pre_analysis<rh<Bts...>>
