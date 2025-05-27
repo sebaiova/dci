@@ -17,7 +17,6 @@ private:
 
     constexpr auto match(lexeme expected)  -> std::expected<void, error>;
     constexpr auto demand_token() -> std::expected<void, error>;
-    constexpr void flush_token();
 
     std::optional<lexeme> current_token {std::nullopt};
     lexical_analyzer& lexical;
