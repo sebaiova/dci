@@ -28,5 +28,7 @@ using keywords = std::tuple<
     keyword<lexeme::BOOLEAN, 'b', 'o', 'o', 'l', 'e', 'a', 'n'>,
     keyword<lexeme::TRUE, 't', 'r', 'u', 'e'>,
     keyword<lexeme::FALSE, 'f', 'a', 'l', 's', 'e'>,
-    keyword<lexeme::NOT, 'n', 'o', 't'>
+    keyword<lexeme::NOT, 'n', 'o', 't'>,
+    keyword<lexeme::READ, 'r', 'e', 'a', 'd'>,
+    keyword<lexeme::WRITE, 'w', 'r', 'i', 't', 'e'>
 >;
