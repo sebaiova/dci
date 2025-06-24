@@ -45,7 +45,7 @@ auto syntax_analyzer::start() -> std::expected<void, error>
         return result;
 
     if(auto result = rule<START>::run(*this); not result)
-        return result;    
+        return std::unexpected(error(error::SYNTAX, (int)*current_token, lexical.get_line(), lexical.get_col())); 
 
     if(current_token!=lexeme::END_OF_FILE)
         return std::unexpected(error(error::SYNTAX_OVER));

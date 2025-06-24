@@ -13,7 +13,7 @@ std::string make_string(const error& err)
         case error::SYNTAX_EOF: return "Syntax Error - End of file, incomplete program.";
         case error::SYNTAX_OVER: return "Syntax Error - Unexpected token at end of program.";
         case error::MESSAGE: return err.msg;
-        default: return "";
+        default: return "Unkown error";
     }
 }
 
