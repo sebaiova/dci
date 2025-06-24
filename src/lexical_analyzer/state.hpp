@@ -16,6 +16,7 @@ namespace state
     [[nodiscard]] auto identifier(char c)   -> std::expected<result, error>;
     [[nodiscard]] auto number(char c)       -> std::expected<result, error>;
     [[nodiscard]] auto relop(char c)        -> std::expected<result, error>;
+    [[nodiscard]] auto relop_maj(char c)    -> std::expected<result, error>;
     [[nodiscard]] auto assign(char c)       -> std::expected<result, error>;
     [[nodiscard]] auto comment(char c)      -> std::expected<result, error>;
 

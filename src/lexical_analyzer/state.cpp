@@ -20,8 +20,8 @@ namespace state
             case '{':       return result { lexeme::UNDETERMINATED, state::comment };
             case '}':       return result { lexeme::UNDETERMINATED, state::space<lexeme::CLOSE_CURLY_BRACKET> };
             case '=':       return result { lexeme::UNDETERMINATED, state::space<lexeme::RELATIONAL_OPERATOR> };
-            case '<':
-            case '>':       return result { lexeme::UNDETERMINATED, state::relop };
+            case '<':       return result { lexeme::UNDETERMINATED, state::relop };
+            case '>':       return result { lexeme::UNDETERMINATED, state::relop_maj };
             case ':':       return result { lexeme::UNDETERMINATED, state::assign };
             case ' ':
             case '\n':
@@ -54,10 +54,21 @@ namespace state
     {
         switch (c)
         {
+            case '=':
+            case '>': return result { lexeme::UNDETERMINATED, state::space<lexeme::RELATIONAL_OPERATOR> };
+            default : return result { lexeme::RELATIONAL_OPERATOR, state::start };
+        }
+    };
+
+    auto relop_maj(char c) -> std::expected<result, error>
+    {
+        switch (c)
+        {
             case '=': return result { lexeme::UNDETERMINATED, state::space<lexeme::RELATIONAL_OPERATOR> };
             default : return result { lexeme::RELATIONAL_OPERATOR, state::start };
         }
     };
+
 
     auto assign(char c) -> std::expected<result, error>
     {
