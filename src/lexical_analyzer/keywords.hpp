@@ -22,13 +22,11 @@ using keywords = std::tuple<
     keyword<lexeme::PROCEDURE, 'p', 'r', 'o', 'c', 'e', 'd', 'u', 'r', 'e'>,
     keyword<lexeme::BEGIN, 'b', 'e', 'g', 'i', 'n'>,
     keyword<lexeme::END, 'e', 'n', 'd'>,
-    keyword<lexeme::READ, 'r', 'e', 'a', 'd'>,
-    keyword<lexeme::WRITE, 'w', 'r', 'i', 't', 'e'>,
     keyword<lexeme::INTEGER, 'i', 'n', 't', 'e', 'g', 'e', 'r'>,
     keyword<lexeme::BOOLEAN, 'b', 'o', 'o', 'l', 'e', 'a', 'n'>,
     keyword<lexeme::TRUE, 't', 'r', 'u', 'e'>,
     keyword<lexeme::FALSE, 'f', 'a', 'l', 's', 'e'>,
     keyword<lexeme::NOT, 'n', 'o', 't'>,
-    keyword<lexeme::READ, 'r', 'e', 'a', 'd'>,
-    keyword<lexeme::WRITE, 'w', 'r', 'i', 't', 'e'>
+    keyword<lexeme::OR, 'o', 'r'>,
+    keyword<lexeme::AND, 'a', 'n', 'd'>
 >;
