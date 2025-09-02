@@ -9,15 +9,15 @@
 
 struct symbol 
 {
-    lexeme token;
+    lexeme token {lexeme::UNDETERMINATED};
     std::optional<std::string> attribute;
-    std::size_t col;
-    std::size_t line;
+    std::size_t col {0};
+    std::size_t line {0};
 };
 
 struct lexical_analyzer
 {
-    lexical_analyzer(const std::string& text, std::list<symbol>& token_stream, std::set<std::string>& attribte_table) : 
+    lexical_analyzer(const std::string& text, std::list<symbol>& token_stream, std::set<std::string>& attribute_table) : 
         buffer { construct_buffer(text) },
         token_stream { token_stream },
         attribute_table { attribute_table }
