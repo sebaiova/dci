@@ -2,9 +2,11 @@
 
 #include "ll1.hpp"
 #include "non_terminal.hpp"
+#include <semantic_rule.hpp>
 
 #define T(TOKEN) lexeme::TOKEN 
 #define N(TOKEN) non_terminal::TOKEN
+#define S(TOKEN) semantic_rule::TOKEN
 
 using PARAMETRO_FORMAL = 
     rules<
@@ -202,7 +204,7 @@ using BLOQUE =
 
 using PROGRAMA =    
     rules<
-        rh<T(PROGRAM), T(IDENTIFIER), T(SEMI_COLON), N(BLOQUE), T(DOT)>
+        rh<T(PROGRAM), S(hella), T(IDENTIFIER), T(SEMI_COLON), N(BLOQUE), T(DOT)>
     >;
 
 using START = PROGRAMA;

@@ -1,8 +1,14 @@
 #pragma once
 
 #include <functional>
+#include <expected>
+#include <error.hpp>
+#include <iostream>
 
-class semantic_rule
+namespace semantic_rule 
 {
-    std::function<void(void)> function;
-};
+    auto hella = []() -> std::expected<void, error> {
+            std::cout << "hella semantic rule!\n";
+            return {};
+        };
+}

@@ -60,6 +60,8 @@ template<beta...Bs> struct rule <rh<Bs...>>
                 return p.match(Bs.value);
             else if constexpr (decltype(Bs)::is_non_terminal())
                 return table(Bs.value, p);
+            else if constexpr (decltype(Bs)::is_semantic_rule())
+                return Bs.value();
             else 
                 return std::expected<void, error>{std::unexpected(error("Panic"))};
         }()) && ...))
