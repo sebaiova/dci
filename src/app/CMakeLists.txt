@@ -7,9 +7,8 @@ add_executable(dci
     print_error.cpp
 )
 
-# (In src/app/CMakeLists.txt, after add_executable)
 if(CMAKE_CROSSCOMPILING)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --static")
 endif()
 
-target_link_libraries(dci PRIVATE lexical_analyzer syntax_analyzer common)
+target_link_libraries(dci PRIVATE lexical_analyzer syntax_analyzer semantic_analyzer common)

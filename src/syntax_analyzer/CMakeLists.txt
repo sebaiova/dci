@@ -8,5 +8,6 @@ add_library(
 target_include_directories(syntax_analyzer INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(syntax_analyzer 
             common
+            semantic_analyzer
             lexical_analyzer
             )
