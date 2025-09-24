@@ -160,7 +160,7 @@ using OPERADOR_TERMINOS =
 
 using LISTA_DECLARACION_VARIABLES = 
     rules<
-        rh<T(IDENTIFIER) S(insert_symbol(IDENTIFIER, DATA_TYPE)), N(LISTA_IDENTIFICADORES), T(COLON), N(DATA_TYPE), T(SEMI_COLON), N(LISTA_DECLARACION_VARIABLES)>,
+        rh<T(IDENTIFIER), N(LISTA_IDENTIFICADORES), T(COLON), N(DATA_TYPE), T(SEMI_COLON), N(LISTA_DECLARACION_VARIABLES)>,
         rh<>
     >;
 
@@ -204,13 +204,7 @@ using BLOQUE =
 
 using PROGRAMA =    
     rules<
-        rh<T(PROGRAM),
-        S([](auto &ctx) {
-                // ctx[1] is the IDENTIFIER token
-                std::string progName = ctx[1].lexeme(); 
-                ctx.symTable = semantic_rule::create_program_symbol_table(progName); 
-            }), 
-        T(IDENTIFIER), T(SEMI_COLON), N(BLOQUE), T(DOT)>
+        rh<T(PROGRAM), S(hella), T(IDENTIFIER), T(SEMI_COLON), N(BLOQUE), T(DOT)>
     >;
 
 using START = PROGRAMA;
