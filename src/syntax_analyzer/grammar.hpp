@@ -2,11 +2,11 @@
 
 #include "ll1.hpp"
 #include "non_terminal.hpp"
-#include <semantic_rule.hpp>
+#include <semantic_analyzer.hpp>
 
 #define T(TOKEN) lexeme::TOKEN 
 #define N(TOKEN) non_terminal::TOKEN
-#define S(TOKEN) semantic_rule::TOKEN
+#define S(FUNC) &semantic_analyzer::FUNC
 
 using PARAMETRO_FORMAL = 
     rules<
@@ -33,7 +33,7 @@ rules<
 
 using LISTA_FACTORES = 
 rules<
-    rh<N(OPERADOR_FACTORES), N(FACTOR), N(LISTA_FACTORES)>,
+        rh<N(OPERADOR_FACTORES), N(FACTOR), N(LISTA_FACTORES)>,
     rh<>
 >;
 
@@ -98,17 +98,17 @@ using SENTENCIA_SIMPLE1 =
 
 using SENTENCIA_COMPUESTA = 
     rules<
-        rh<T(BEGIN), N(LISTA_SENTENCIAS), T(END)>
+        rh<T(BEGIN), N(LISTA_SENTENCIAS), T(END), S(pop_scope)>
     >;
 
 using EXPRESION = 
     rules<
-        rh<N(EXPRESION_SIMPLE), N(EXPRESION1)>
+        rh<N(EXPRESION_SIMPLE), N(EXPRESION1), S(exp)>
     >;
 
 using EXPRESION1 =  
     rules<
-        rh<T(RELATIONAL_OPERATOR), N(EXPRESION_SIMPLE)>,
+        rh<T(RELATIONAL_OPERATOR), S(lint), N(EXPRESION_SIMPLE), S(lint)>,
         rh<>
     >;
 
@@ -121,8 +121,10 @@ using EXPRESION_SIMPLE =
 
 using FACTOR = 
     rules<
-        rh<T(NUMBER)>,
-        rh<T(NOT), N(FACTOR)>,
+        rh<T(NUMBER), S(faci)>,
+        rh<T(TRUE), S(facb)>,
+        rh<T(FALSE), S(facb)>,
+        rh<T(NOT), N(FACTOR), S(lbool)>,
         rh<T(OPEN_PARENTHESIS), N(EXPRESION), T(CLOSE_PARENTHESIS)>,
         rh<T(IDENTIFIER), N(FACTOR1)>
     >;
@@ -135,8 +137,8 @@ using FACTOR1 =
 
 using DATA_TYPE = 
     rules<
-        rh<T(INTEGER)>,
-        rh<T(BOOLEAN)>
+        rh<T(INTEGER), S(integer)>,
+        rh<T(BOOLEAN), S(boolean)>
     >;
 
 using TERMINO = 
@@ -146,9 +148,9 @@ using TERMINO =
 
 using OPERADOR_FACTORES = 
     rules<
-        rh<T(MULT)>,
-        rh<T(AND)>,
-        rh<T(DIV)>
+        rh<T(MULT), S(lint), S(nfaci)>,
+        rh<T(AND), S(lbool), S(nfacb)>,
+        rh<T(DIV), S(lint), S(nfaci)>
     >;
 
 using OPERADOR_TERMINOS = 
@@ -166,17 +168,17 @@ using LISTA_DECLARACION_VARIABLES =
 
 using PARAMETROS_FORMALES = 
     rules<
-        rh<T(OPEN_PARENTHESIS), N(LISTA_PARAMETROS_FORMALES), T(CLOSE_PARENTHESIS)>
+        rh<T(OPEN_PARENTHESIS), S(fparam), N(LISTA_PARAMETROS_FORMALES), T(CLOSE_PARENTHESIS), S(ready)>
     >;
 
 using PROCEDIMIENTO = 
     rules<
-        rh<T(PROCEDURE), T(IDENTIFIER), N(PARAMETROS_FORMALES), T(SEMI_COLON), N(BLOQUE)>
+        rh<T(PROCEDURE), S(procedure), T(IDENTIFIER), S(ready), S(push_scope), N(PARAMETROS_FORMALES), T(SEMI_COLON), N(BLOQUE)>
     >;
 
 using FUNCION = 
     rules<
-        rh<T(FUNCTION), T(IDENTIFIER), N(PARAMETROS_FORMALES), T(COLON), N(DATA_TYPE), T(SEMI_COLON), N(BLOQUE)>
+        rh<T(FUNCTION), S(function), T(IDENTIFIER), S(ready), S(push_scope), N(PARAMETROS_FORMALES), T(COLON), N(DATA_TYPE), T(SEMI_COLON), N(BLOQUE)>
     >;
 
 using SUBRUTINA = 
@@ -187,7 +189,7 @@ using SUBRUTINA =
 
 using AREA_VARIABLES =
     rules<
-        rh<T(VAR), N(LISTA_DECLARACION_VARIABLES)>,
+        rh<T(VAR), S(var), N(LISTA_DECLARACION_VARIABLES), S(ready)>,
         rh<>
     >;
 
@@ -204,7 +206,7 @@ using BLOQUE =
 
 using PROGRAMA =    
     rules<
-        rh<T(PROGRAM), S(hella), T(IDENTIFIER), T(SEMI_COLON), N(BLOQUE), T(DOT)>
+        rh<T(PROGRAM), S(program), T(IDENTIFIER), S(ready), T(SEMI_COLON), N(BLOQUE), T(DOT)>
     >;
 
 using START = PROGRAMA;

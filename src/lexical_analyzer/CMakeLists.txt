@@ -1,4 +1,4 @@
-set(CMAKE_BUILD_TYPE Release)
+#set(CMAKE_BUILD_TYPE Release)
 
 add_library(
     lexical_analyzer STATIC
@@ -7,4 +7,6 @@ add_library(
 )
 
 target_include_directories(lexical_analyzer INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(lexical_analyzer common)
+target_link_libraries(  lexical_analyzer 
+                        semantic_analyzer
+                        common)

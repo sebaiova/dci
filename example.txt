@@ -1,25 +1,6 @@
-
-program MyProgram;
-var a, b, c: Integer;
-    d: Boolean;
-function MyProcedure(a, b: Integer; c: Boolean) : Integer;
-begin 
-    c := 3;
-    MyProcedure := a+b;
-end;
+PROGRAM myProgram;
+var x, a, z : Integer;
 begin
-    MyProcedure(4*2);
-    x := 2*4;
-    while x<3 do 
-      a := 4*4;
-    if 3=2 then
-     a := 2
-    else if e=2 then
-     a := 4;
-
-    while 4=3 do 
-        if 2=1 then 
-            a := f
-        else 
-            b := 4;
+    if( true and false) then a();
 end.
+

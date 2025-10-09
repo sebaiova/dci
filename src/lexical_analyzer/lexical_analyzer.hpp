@@ -1,11 +1,11 @@
 #pragma once
 #include <optional>
 #include <expected>
-#include <sstream>
-#include <set>
 #include <list>
 #include "lexemes.hpp"
-#include "error.hpp"
+#include <error.hpp>
+#include <semantic_analyzer.hpp>
+#include <string>
 
 struct symbol 
 {
@@ -17,10 +17,10 @@ struct symbol
 
 struct lexical_analyzer
 {
-    lexical_analyzer(const std::string& text, std::list<symbol>& token_stream, std::set<std::string>& attribute_table) : 
+    lexical_analyzer(const std::string& text, std::list<symbol>& token_stream, semantic_analyzer& semantic) : 
         buffer { construct_buffer(text) },
         token_stream { token_stream },
-        attribute_table { attribute_table }
+        _semantic { semantic }
     {
         it = buffer.begin();
     }
@@ -48,9 +48,9 @@ private:
     std::string::const_iterator it;
     std::string::const_iterator start;
 
-    void token_register(const symbol&);
+    std::expected<void, error> token_register(const symbol&);
     std::list<symbol>& token_stream;
-    std::set<std::string>& attribute_table;
+    semantic_analyzer& _semantic;
 
     std::size_t line { 1 };
     std::size_t col { 0 }; 

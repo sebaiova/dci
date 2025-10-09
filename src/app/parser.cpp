@@ -1,7 +1,7 @@
 #include "parser.hpp"
 #include <lexical_analyzer.hpp>
 #include <syntax_analyzer.hpp>
-#include <iostream>
+#include <semantic_analyzer.hpp>
 #include "logger.hpp"
 
 parser::parser(const std::string& str) : str { str } 
@@ -17,8 +17,9 @@ parser::~parser()
 
 auto parser::run() -> std::expected<void, error>
 {
-    auto lexical { lexical_analyzer(str, token_stream, attribte_table) };
-    auto syntax  { syntax_analyzer(lexical) };
+    auto semantical { semantic_analyzer() };
+    auto lexical { lexical_analyzer(str, token_stream, semantical) };
+    auto syntax  { syntax_analyzer(lexical, semantical) };
 
     return syntax.start();
 }

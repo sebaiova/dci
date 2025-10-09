@@ -2,6 +2,7 @@
 #include "state.hpp"
 #include <iostream>
 #include <format>
+#include <semantic_analyzer.hpp>
 
 auto lexical_analyzer::operator>>(std::expected<symbol, error>& output) -> lexical_analyzer&
 {
@@ -37,7 +38,9 @@ auto lexical_analyzer::next_token() -> std::expected<symbol, error>
             auto attribute { current_state->token==lexeme::IDENTIFIER ? std::make_optional(std::string(start, it)) : std::nullopt };
             output.token = current_state->token;
             output.attribute = attribute;
-            token_register(output);
+            auto ok = token_register(output);
+            if(not ok)
+                return std::unexpected(error(ok.error()));
             return output;
         }
     }
@@ -72,10 +75,19 @@ void lexical_analyzer::skip_spaces()
     }
 }
 
-void lexical_analyzer::token_register(const symbol& s) 
+bool has_value(const lexeme lex)
+{
+    return lex == lexeme::NUMBER || lex == lexeme::FALSE || lex == lexeme::TRUE || lex == lexeme::IDENTIFIER;
+}
+
+std::expected<void, error> lexical_analyzer::token_register(const symbol& s)
 {   
     token_stream.push_back(s);
-
     if(s.attribute)
-        attribute_table.insert(*s.attribute);
+       return _semantic.analyze_symbol(*s.attribute);
+
+    if(has_value(s.token))
+        _semantic._last_value = s.token;
+
+    return {};
 }
