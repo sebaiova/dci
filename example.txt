@@ -1,6 +1,7 @@
 PROGRAM myProgram;
 var x, a, z : Integer;
 begin
+a
     if( true and false) then a();
 end.
 
