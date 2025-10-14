@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <deque>
+#include <stack>
 #include <expected>
 #include <format>
 
@@ -57,6 +58,15 @@ struct semantic_analyzer
         return std::unexpected(std::format("Semantic Error: \"{}\" is not declared.", symbol));
     }
 
+    symbol_table::type get_type(const std::string& symbol) const
+    {
+        for(auto& scope : _scopes)
+            if (scope.check(symbol))
+                return scope.get_type(symbol);
+
+        return symbol_table::type::VOID;
+    }
+
     std::expected<void, error> ready()
     {
         _current_state = state::READY;
@@ -101,34 +111,21 @@ struct semantic_analyzer
         }
     }
 
-    std::expected<void, error> vbool()
-    {
-        return {};
-    }
-
-    std::expected<void, error> vint()
-    {
-        return {};
-    }
-
     std::expected<void, error> lint()
     {
-        if(_last_value != lexeme::NUMBER)
-            return std::unexpected(std::format("Semantic Error: Expected number."));
+        if(_last_type == symbol_table::type::INTEGER)
+            return {};
 
-        return {};
+        return std::unexpected(std::format("Semantic Error: Expected integer."));
     }
 
     std::expected<void, error> lbool()
     {
-        if(_last_value == lexeme::TRUE || _last_value == lexeme::FALSE)
+        if(_last_type == symbol_table::type::BOOLEAN)
             return {};
 
         return std::unexpected(std::format("Semantic Error: Expected boolean."));
     }
-
-
-
 
     std::expected<void, error> declare_fparams(symbol_table::type type)
     {
@@ -173,46 +170,82 @@ struct semantic_analyzer
     }
 
 
-    std::expected<void, error> nfaci()
+    std::expected<void, error> nint()
     {
-        _expected_fac = symbol_table::type::INTEGER;
+        _next_type.push(symbol_table::type::INTEGER);
         return {};
     }
 
-    std::expected<void, error> nfacb()
+    std::expected<void, error> nbool()
     {
-        _expected_fac = symbol_table::type::BOOLEAN;
+        _next_type.push(symbol_table::type::BOOLEAN);
         return {};
     }
 
     std::expected<void, error> faci()
     {
-        if( _expected_fac != symbol_table::type::VOID && _expected_fac != symbol_table::type::INTEGER)
-        {
-            _expected_fac = symbol_table::type::VOID;
-            return std::unexpected(error(std::format("Semantic Error: Expected Boolean.")));
-        }
-        return {};
+        _last_type =  symbol_table::type::INTEGER;
+        return check_expected(_last_type);
+    }
+
+    std::expected<void, error> facs()
+    {
+        _last_type = get_type(_last_id);
+        return check_expected(_last_type);
     }
 
     std::expected<void, error> facb()
     {
-        if( _expected_fac != symbol_table::type::VOID && _expected_fac != symbol_table::type::BOOLEAN)
+        _last_type = symbol_table::type::BOOLEAN;
+        return check_expected(_last_type);
+    }
+
+    std::expected<void, error> check_expected(symbol_table::type type)
+    {
+        switch(_next_type.top())
         {
-            _expected_fac = symbol_table::type::VOID;
-            return std::unexpected(error(std::format("Semantic Error: Expected Integer.")));
+            case symbol_table::type::INTEGER: return check_expected_int(type);
+            case symbol_table::type::BOOLEAN: return check_expected_bool(type);
+            default: return {};
         }
+    }
+
+    std::expected<void, error> check_expected_int(symbol_table::type type)
+    {
+        if(symbol_table::type::INTEGER != type)
+            return std::unexpected(error("Semantic Error: Expected Integer."));
+        _next_type.top() = symbol_table::type::VOID;
+        return {};
+    }
+
+    std::expected<void, error> check_expected_bool(symbol_table::type type)
+    {    
+
+        if(symbol_table::type::BOOLEAN != type)
+            return std::unexpected(error("Semantic Error: Expected Boolean."));
+        _next_type.top() = symbol_table::type::VOID;
+        return {};
+    }
+
+    std::expected<void, error> openp()
+    {
+        _next_type.push(symbol_table::type::VOID);
+        return {};
+    }
+
+    std::expected<void, error> closep()
+    {
+        _next_type.pop();
         return {};
     }
 
     symbol_table& current_scope() { return _scopes.front(); }
 
-    bool exp_bool;
-
     std::string _last_id {};
     lexeme _last_value{};
 
-    symbol_table::type _expected_fac { symbol_table::type::VOID };
+    symbol_table::type _last_type{ symbol_table::type::VOID };
+    std::stack<symbol_table::type> _next_type { std::deque<symbol_table::type>{ symbol_table::type::VOID } };
 
     std::string _current_scope_name {};
     std::vector<std::string> _tmp_vars    {};

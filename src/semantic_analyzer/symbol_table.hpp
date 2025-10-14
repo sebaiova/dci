@@ -19,9 +19,14 @@ struct symbol_table
         _fparams_types[subrutine].push_back(symbol_type);
     }
 
-    bool check(const std::string& symbol)
+    bool check(const std::string& symbol) const
     {
         return _types.contains(symbol);
+    }
+
+    type get_type(const std::string& symbol) const
+    {
+        return _types.at(symbol);
     }
 
     void set_scope_return(type t)

@@ -103,19 +103,19 @@ using SENTENCIA_COMPUESTA =
 
 using EXPRESION = 
     rules<
-        rh<N(EXPRESION_SIMPLE), N(EXPRESION1), S(exp)>
+        rh<N(EXPRESION_SIMPLE), N(EXPRESION1)>
     >;
 
 using EXPRESION1 =  
     rules<
-        rh<T(RELATIONAL_OPERATOR), S(lint), N(EXPRESION_SIMPLE), S(lint)>,
+        rh<T(RELATIONAL_OPERATOR), S(lint), N(EXPRESION_SIMPLE), S(lint), S(facb)>,
         rh<>
     >;
 
 using EXPRESION_SIMPLE = 
     rules<
-        rh<T(ADD), N(TERMINO), N(LISTA_TERMINOS)>,
-        rh<T(SUB), N(TERMINO), N(LISTA_TERMINOS)>,
+        rh<T(ADD), S(nint), N(TERMINO), N(LISTA_TERMINOS)>,
+        rh<T(SUB), S(nint), N(TERMINO), N(LISTA_TERMINOS)>,
         rh<N(TERMINO), N(LISTA_TERMINOS)>
     >;
 
@@ -125,8 +125,8 @@ using FACTOR =
         rh<T(TRUE), S(facb)>,
         rh<T(FALSE), S(facb)>,
         rh<T(NOT), N(FACTOR), S(lbool)>,
-        rh<T(OPEN_PARENTHESIS), N(EXPRESION), T(CLOSE_PARENTHESIS)>,
-        rh<T(IDENTIFIER), N(FACTOR1)>
+        rh<T(OPEN_PARENTHESIS), S(openp), N(EXPRESION), T(CLOSE_PARENTHESIS), S(closep)>,
+        rh<T(IDENTIFIER), N(FACTOR1), S(facs)>
     >;
 
 using FACTOR1 = 
@@ -148,16 +148,16 @@ using TERMINO =
 
 using OPERADOR_FACTORES = 
     rules<
-        rh<T(MULT), S(lint), S(nfaci)>,
-        rh<T(AND), S(lbool), S(nfacb)>,
-        rh<T(DIV), S(lint), S(nfaci)>
+        rh<T(MULT), S(lint), S(nint)>,
+        rh<T(AND), S(lbool), S(nbool)>,
+        rh<T(DIV), S(lint), S(nint)>
     >;
 
 using OPERADOR_TERMINOS = 
     rules<
-        rh<T(ADD)>,
-        rh<T(SUB)>,
-        rh<T(OR)>
+        rh<T(ADD), S(lint), S(nint)>,
+        rh<T(SUB), S(lint), S(nint)>,
+        rh<T(OR), S(lbool), S(lbool)>
     >;
 
 using LISTA_DECLARACION_VARIABLES = 

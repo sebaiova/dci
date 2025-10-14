@@ -2,7 +2,6 @@ PROGRAM myProgram;
 var x, a, z : Integer;
     c : Boolean;
 begin
-    c := not c;
-    if( true and false) then a();
+    c := (3 < 2) and (true or a < 2);
 end.
 
