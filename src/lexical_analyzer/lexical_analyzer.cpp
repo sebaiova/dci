@@ -84,7 +84,11 @@ std::expected<void, error> lexical_analyzer::token_register(const symbol& s)
 {   
     token_stream.push_back(s);
     if(s.attribute)
-       return _semantic.analyze_symbol(*s.attribute);
+    {
+        auto ok = _semantic.analyze_symbol(*s.attribute);
+        if (not ok)
+            return std::unexpected(ok.error().msg + std::format(" Seen at line {} and column {}.", line, col) ); 
+    }
 
     if(has_value(s.token))
         _semantic._last_value = s.token;

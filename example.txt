@@ -1,7 +1,8 @@
 PROGRAM myProgram;
 var x, a, z : Integer;
+    c : Boolean;
 begin
-a
+    c := not c;
     if( true and false) then a();
 end.
 

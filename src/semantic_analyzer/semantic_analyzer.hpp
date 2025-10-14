@@ -29,7 +29,7 @@ struct semantic_analyzer
         return {};
     }
 
-    std::expected<void, error>  push_symbol(const std::string& symbol, symbol_table::type symbol_type)
+    std::expected<void, error> push_symbol(const std::string& symbol, symbol_table::type symbol_type)
     {
         if(current_scope().push(symbol, symbol_type))
             return {};
@@ -54,7 +54,7 @@ struct semantic_analyzer
         for(auto& scope : _scopes)
             if (scope.check(symbol))
                 return {};
-        return std::unexpected(std::format("Semantic Error: {} is not declared.", symbol));
+        return std::unexpected(std::format("Semantic Error: \"{}\" is not declared.", symbol));
     }
 
     std::expected<void, error> ready()

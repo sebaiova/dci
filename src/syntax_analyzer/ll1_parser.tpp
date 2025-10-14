@@ -60,13 +60,18 @@ template<beta...Bs> struct rule <rh<Bs...>>
     {
         std::expected<void, error> result;
 
-        if (((result = [&p, &s](){
+        if (((result = [&p, &s]() -> std::expected<void, error> {
             if constexpr (decltype(Bs)::is_terminal())
                 return p.match(Bs.value);
             else if constexpr (decltype(Bs)::is_non_terminal())
                 return table(Bs.value, p, s);
             else if constexpr (decltype(Bs)::is_semantic_rule())
-                return (s.*Bs.value)();
+            {
+                auto ok = (s.*Bs.value)();
+                if(not ok)
+                    return std::unexpected(error(ok.error().msg + std::format(" Seen at line: {} col: {}", p._lexical.get_line(), p._lexical.get_col())));
+                return {};
+            }
             else 
                 return std::expected<void, error>{std::unexpected(error("Panic"))};
         }()) && ...))
