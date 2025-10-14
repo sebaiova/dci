@@ -69,7 +69,7 @@ using SENTENCIA =
 
 using SENTENCIA_CONDICIONAL = 
     rules<
-        rh<T(IF), N(EXPRESION), T(THEN), N(SENTENCIA), N(SENTENCIA_ELSE)>
+        rh<T(IF), N(EXPRESION), S(lbool), T(THEN), N(SENTENCIA), N(SENTENCIA_ELSE)>
     >;
 
 using SENTENCIA_ELSE = 
@@ -80,20 +80,20 @@ using SENTENCIA_ELSE =
 
 using SENTENCIA_REPETITIVA = 
     rules<
-        rh<T(WHILE), N(EXPRESION), T(DO), N(SENTENCIA)>
+        rh<T(WHILE), N(EXPRESION), S(lbool), T(DO), N(SENTENCIA)>
     >;
 
 using SENTENCIA_SIMPLE = 
     rules<
         rh<N(SENTENCIA_CONDICIONAL)>,
         rh<N(SENTENCIA_REPETITIVA)>,
-        rh<T(IDENTIFIER), N(SENTENCIA_SIMPLE1)>
+        rh<T(IDENTIFIER), S(facs), N(SENTENCIA_SIMPLE1)>
     >;
 
 using SENTENCIA_SIMPLE1 = 
     rules<
-        rh<T(OPEN_PARENTHESIS), N(PARAMETROS_ACTUALES), T(CLOSE_PARENTHESIS)>,
-        rh<T(ASSIGNATION), N(EXPRESION)>
+        rh<T(OPEN_PARENTHESIS), S(lproc), N(PARAMETROS_ACTUALES), T(CLOSE_PARENTHESIS)>,
+        rh<T(ASSIGNATION), S(assign_open), N(EXPRESION), S(assign_close)>
     >;
 
 using SENTENCIA_COMPUESTA = 
@@ -103,12 +103,12 @@ using SENTENCIA_COMPUESTA =
 
 using EXPRESION = 
     rules<
-        rh<N(EXPRESION_SIMPLE), N(EXPRESION1)>
+        rh<N(EXPRESION_SIMPLE), S(expi), N(EXPRESION1)>
     >;
 
 using EXPRESION1 =  
     rules<
-        rh<T(RELATIONAL_OPERATOR), S(lint), N(EXPRESION_SIMPLE), S(lint), S(facb)>,
+        rh<T(RELATIONAL_OPERATOR), S(lint), N(EXPRESION_SIMPLE), S(lint), S(facb), S(expb)>,
         rh<>
     >;
 
@@ -125,7 +125,7 @@ using FACTOR =
         rh<T(TRUE), S(facb)>,
         rh<T(FALSE), S(facb)>,
         rh<T(NOT), N(FACTOR), S(lbool)>,
-        rh<T(OPEN_PARENTHESIS), S(openp), N(EXPRESION), T(CLOSE_PARENTHESIS), S(closep)>,
+        rh<T(OPEN_PARENTHESIS), S(openp), N(EXPRESION), T(CLOSE_PARENTHESIS), S(closep), S(exp)>,
         rh<T(IDENTIFIER), N(FACTOR1), S(facs)>
     >;
 

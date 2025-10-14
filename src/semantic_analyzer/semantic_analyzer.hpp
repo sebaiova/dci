@@ -9,6 +9,7 @@
 #include <stack>
 #include <expected>
 #include <format>
+#include <iostream>
 
 struct semantic_analyzer 
 {
@@ -88,6 +89,9 @@ struct semantic_analyzer
     std::expected<void, error> program()
     {
         _current_state = state::PROGRAM;
+        push_symbol("write", symbol_table::type::PROCEDURE);
+
+
         return {};
     }
 
@@ -127,6 +131,14 @@ struct semantic_analyzer
         return std::unexpected(std::format("Semantic Error: Expected boolean."));
     }
 
+    std::expected<void, error> lproc()
+    {
+        if(_last_type == symbol_table::type::PROCEDURE)
+            return {};
+
+        return std::unexpected(std::format("Semantic Error: \"{}\" is not a procedure.", _last_id));
+    }
+
     std::expected<void, error> declare_fparams(symbol_table::type type)
     {
         for(auto& symbol : _tmp_fparams)
@@ -164,39 +176,36 @@ struct semantic_analyzer
         return {};
     }
 
-    std::expected<void, error> exp()
-    {
-        return {};
-    }
-
-
     std::expected<void, error> nint()
     {
-        _next_type.push(symbol_table::type::INTEGER);
+        _next_type.top()=symbol_table::type::INTEGER;
         return {};
     }
 
     std::expected<void, error> nbool()
     {
-        _next_type.push(symbol_table::type::BOOLEAN);
+        _next_type.top()=symbol_table::type::BOOLEAN;
         return {};
     }
 
     std::expected<void, error> faci()
     {
         _last_type =  symbol_table::type::INTEGER;
+        _assigned_type = _last_type;
         return check_expected(_last_type);
     }
 
     std::expected<void, error> facs()
     {
         _last_type = get_type(_last_id);
+        _assigned_type = _last_type;
         return check_expected(_last_type);
     }
 
     std::expected<void, error> facb()
     {
         _last_type = symbol_table::type::BOOLEAN;
+        _assigned_type = _last_type;
         return check_expected(_last_type);
     }
 
@@ -220,7 +229,6 @@ struct semantic_analyzer
 
     std::expected<void, error> check_expected_bool(symbol_table::type type)
     {    
-
         if(symbol_table::type::BOOLEAN != type)
             return std::unexpected(error("Semantic Error: Expected Boolean."));
         _next_type.top() = symbol_table::type::VOID;
@@ -239,10 +247,62 @@ struct semantic_analyzer
         return {};
     }
 
+    std::expected<void, error> assign_open()
+    {
+        _assign_type = _last_type;
+        return {};
+    }
+
+    std::expected<void, error> assign_close()
+    {
+        if(_assign_type==_assigned_type)
+            return {};
+
+        if(_assign_type==symbol_table::type::INTEGER)
+            return std::unexpected(error("Semantic Error! Can not assign boolean to integer."));
+
+        if(_assign_type==symbol_table::type::BOOLEAN)
+            return std::unexpected(error("Semantic Error! Can not assign integer to boolean."));
+
+        return {};
+    }
+
+    std::expected<void, error> expi()
+    {
+        _expression_type = symbol_table::type::INTEGER;
+        return {};
+    }
+
+    std::expected<void, error> expb()
+    {
+        _expression_type = symbol_table::type::BOOLEAN;
+        return {};
+    }
+
+
+    std::expected<void, error> exp()
+    {
+        if(_next_type.top()==symbol_table::type::VOID)
+            return {};
+
+        if(_expression_type != _next_type.top())
+            return std::unexpected(error("Semantic Error! Report me."));
+
+        return {};
+    }
+
+
+
     symbol_table& current_scope() { return _scopes.front(); }
 
     std::string _last_id {};
     lexeme _last_value{};
+
+    symbol_table::type _assign_type { symbol_table::type::VOID };
+    symbol_table::type _assigned_type { symbol_table::type::VOID };
+
+    symbol_table::type _expression_type { symbol_table::type::VOID };
+
 
     symbol_table::type _last_type{ symbol_table::type::VOID };
     std::stack<symbol_table::type> _next_type { std::deque<symbol_table::type>{ symbol_table::type::VOID } };
