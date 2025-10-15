@@ -21,13 +21,13 @@ rules<
 
 using PARAMETROS_ACTUALES = 
 rules<
-    rh<N(EXPRESION), N(LISTA_EXPRESIONES)>,
+    rh<N(EXPRESION), S(check_param), N(LISTA_EXPRESIONES)>,
     rh<>
 >;
     
 using LISTA_EXPRESIONES = 
 rules<
-    rh<T(COMMA), N(EXPRESION), N(LISTA_EXPRESIONES)>,
+    rh<T(COMMA), N(EXPRESION), S(check_param), N(LISTA_EXPRESIONES)>,
     rh<>
 >;
 
@@ -92,7 +92,7 @@ using SENTENCIA_SIMPLE =
 
 using SENTENCIA_SIMPLE1 = 
     rules<
-        rh<T(OPEN_PARENTHESIS), S(lproc), N(PARAMETROS_ACTUALES), T(CLOSE_PARENTHESIS)>,
+        rh<T(OPEN_PARENTHESIS), S(lproc), N(PARAMETROS_ACTUALES), S(check_call),T(CLOSE_PARENTHESIS)>,
         rh<T(ASSIGNATION), S(assign_open), N(EXPRESION), S(assign_close)>
     >;
 
@@ -126,12 +126,12 @@ using FACTOR =
         rh<T(FALSE), S(facb)>,
         rh<T(NOT), N(FACTOR), S(lbool)>,
         rh<T(OPEN_PARENTHESIS), S(openp), N(EXPRESION), T(CLOSE_PARENTHESIS), S(closep), S(exp)>,
-        rh<T(IDENTIFIER), N(FACTOR1), S(facs)>
+        rh<T(IDENTIFIER), S(facs), N(FACTOR1)>
     >;
 
 using FACTOR1 = 
     rules<
-        rh<T(OPEN_PARENTHESIS), N(PARAMETROS_ACTUALES), T(CLOSE_PARENTHESIS)>,
+        rh<T(OPEN_PARENTHESIS), S(lfunc), N(PARAMETROS_ACTUALES), S(check_call), T(CLOSE_PARENTHESIS)>,
         rh<>
     >;
 
@@ -178,7 +178,7 @@ using PROCEDIMIENTO =
 
 using FUNCION = 
     rules<
-        rh<T(FUNCTION), S(function), T(IDENTIFIER), S(ready), S(push_scope), N(PARAMETROS_FORMALES), T(COLON), N(DATA_TYPE), T(SEMI_COLON), N(BLOQUE)>
+        rh<T(FUNCTION), S(function), T(IDENTIFIER), S(ready), S(push_scope), N(PARAMETROS_FORMALES), T(COLON), S(function), N(DATA_TYPE), T(SEMI_COLON), S(ready), N(BLOQUE)>
     >;
 
 using SUBRUTINA = 

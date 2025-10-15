@@ -29,12 +29,23 @@ struct symbol_table
         return _types.at(symbol);
     }
 
+    std::vector<type> get_fparams(const std::string& subrutine_symbol) const
+    {
+        return _fparams_types.at(subrutine_symbol);
+    }
+
     void set_scope_return(type t)
     {
         scope_return = t;
     }
 
+    void set_return(const std::string& symbol, type t)
+    {
+        _return_types[symbol] = t;   
+    }
+
     type scope_return = type::VOID;
     std::map<std::string, type> _types {};
     std::map<std::string, std::vector<type>> _fparams_types {};
+    std::map<std::string, type> _return_types {};
 };

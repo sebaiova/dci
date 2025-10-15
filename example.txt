@@ -1,8 +1,14 @@
 PROGRAM myProgram;
 var x, a, z : Integer;
     c : Boolean;
+
+function sumar() : Integer;
+begin 
+end;
+
 begin
-    write(2);
+    write(a);
+    a := sumar();
     a := (2*a*(2+2));
     c := (write() < 2) and c;
     z := ((a + (2 * 4)));

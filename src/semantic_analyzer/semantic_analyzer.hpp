@@ -68,6 +68,14 @@ struct semantic_analyzer
         return symbol_table::type::VOID;
     }
 
+    std::vector<symbol_table::type> get_fparams(const std::string& symbol) const
+    {
+        for(auto& scope : _scopes)
+            if (scope.check(symbol))
+                return scope.get_fparams(symbol);
+        return {};
+    }
+
     std::expected<void, error> ready()
     {
         _current_state = state::READY;
@@ -90,8 +98,14 @@ struct semantic_analyzer
     {
         _current_state = state::PROGRAM;
         push_symbol("write", symbol_table::type::PROCEDURE);
+        current_scope().push_fparam("write", symbol_table::type::INTEGER);
 
+        return {};
+    }
 
+    std::expected<void, error> set_return(symbol_table::type type)
+    {
+        current_scope().set_return(_current_scope_name, type);
         return {};
     }
 
@@ -101,6 +115,7 @@ struct semantic_analyzer
         {
             case state::VAR: return declare_vars(symbol_table::type::INTEGER);
             case state::FPARAM: return declare_fparams(symbol_table::type::INTEGER);
+            case state::FUNCTION: return set_return(symbol_table::type::INTEGER);
             default : return {};
         }
     }
@@ -111,6 +126,7 @@ struct semantic_analyzer
         {
             case state::VAR: return declare_vars(symbol_table::type::BOOLEAN);
             case state::FPARAM: return declare_fparams(symbol_table::type::BOOLEAN);
+            case state::FUNCTION: return  set_return(symbol_table::type::BOOLEAN);
             default : return {};
         }
     }
@@ -134,9 +150,42 @@ struct semantic_analyzer
     std::expected<void, error> lproc()
     {
         if(_last_type == symbol_table::type::PROCEDURE)
+        {
+            _tmp_aparams = get_fparams(_last_id);            
             return {};
+        }
 
         return std::unexpected(std::format("Semantic Error: \"{}\" is not a procedure.", _last_id));
+    }
+
+    std::expected<void, error> lfunc()
+    {
+        if(_last_type == symbol_table::type::FUNCTION)
+        {
+            _tmp_aparams = get_fparams(_last_id);            
+            return {};
+        }
+
+        return std::unexpected(std::format("Semantic Error: \"{}\" is not a function.", _last_id));
+    }
+
+    std::expected<void, error> check_param()
+    {
+        if(_tmp_aparams.empty())
+            return std::unexpected(std::format("Semantic Error: Incorrect number of parameters."));
+
+        if(_tmp_aparams.back()!=_last_type)
+            return std::unexpected(std::format("Semantic Error: Type mismatch in subrutine call."));
+
+        _tmp_aparams.pop_back();
+        return {};
+    }
+
+    std::expected<void, error> check_call()
+    {
+        if(not _tmp_aparams.empty())
+            return std::unexpected(std::format("Semantic Error: Incorrect number of parameters."));
+        return {};
     }
 
     std::expected<void, error> declare_fparams(symbol_table::type type)
@@ -208,6 +257,14 @@ struct semantic_analyzer
         _assigned_type = _last_type;
         return check_expected(_last_type);
     }
+
+    std::expected<void, error> facf()
+    {
+        _last_type = symbol_table::type::FUNCTION;
+        _assigned_type = _last_type;
+        return check_expected(_last_type);
+    }
+
 
     std::expected<void, error> check_expected(symbol_table::type type)
     {
@@ -308,6 +365,7 @@ struct semantic_analyzer
     std::stack<symbol_table::type> _next_type { std::deque<symbol_table::type>{ symbol_table::type::VOID } };
 
     std::string _current_scope_name {};
+    std::vector<symbol_table::type> _tmp_aparams {};
     std::vector<std::string> _tmp_vars    {};
     std::vector<std::string> _tmp_fparams {};
     std::deque<symbol_table> _scopes { 1 };
