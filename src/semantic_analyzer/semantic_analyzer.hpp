@@ -76,6 +76,14 @@ struct semantic_analyzer
         return {};
     }
 
+    symbol_table::type get_return(const std::string& symbol) const
+    {
+        for(auto& scope : _scopes)
+            if (scope.check(symbol))
+                return scope.get_return(symbol);
+        return symbol_table::type::VOID;
+    }
+
     std::expected<void, error> ready()
     {
         _current_state = state::READY;
@@ -105,7 +113,9 @@ struct semantic_analyzer
 
     std::expected<void, error> set_return(symbol_table::type type)
     {
-        current_scope().set_return(_current_scope_name, type);
+        for(auto& scope : _scopes)
+            if (scope.check(_current_scope_name))
+                scope.set_return(_current_scope_name, type);
         return {};
     }
 
@@ -151,7 +161,7 @@ struct semantic_analyzer
     {
         if(_last_type == symbol_table::type::PROCEDURE)
         {
-            _tmp_aparams = get_fparams(_last_id);            
+            _tmp_aparams.push(get_fparams(_last_id));            
             return {};
         }
 
@@ -162,7 +172,7 @@ struct semantic_analyzer
     {
         if(_last_type == symbol_table::type::FUNCTION)
         {
-            _tmp_aparams = get_fparams(_last_id);            
+            _tmp_aparams.push(get_fparams(_last_id));            
             return {};
         }
 
@@ -171,20 +181,21 @@ struct semantic_analyzer
 
     std::expected<void, error> check_param()
     {
-        if(_tmp_aparams.empty())
+        if(_tmp_aparams.top().empty())
             return std::unexpected(std::format("Semantic Error: Incorrect number of parameters."));
 
-        if(_tmp_aparams.back()!=_last_type)
+        if(_tmp_aparams.top().back()!=_last_type)
             return std::unexpected(std::format("Semantic Error: Type mismatch in subrutine call."));
 
-        _tmp_aparams.pop_back();
+        _tmp_aparams.top().pop_back();
         return {};
     }
 
     std::expected<void, error> check_call()
     {
-        if(not _tmp_aparams.empty())
+        if(not _tmp_aparams.top().empty())
             return std::unexpected(std::format("Semantic Error: Incorrect number of parameters."));
+        _tmp_aparams.pop();
         return {};
     }
 
@@ -195,7 +206,10 @@ struct semantic_analyzer
             auto ok = push_symbol(symbol, type);
             if(not ok)
                 return std::unexpected(ok.error());
-            current_scope().push_fparam(_current_scope_name, type);
+
+            for(auto& scope : _scopes)
+                if (scope.check(_current_scope_name))
+                    scope.push_fparam(_current_scope_name, type);
         }
         _tmp_fparams.clear();
         return {};
@@ -258,13 +272,20 @@ struct semantic_analyzer
         return check_expected(_last_type);
     }
 
-    std::expected<void, error> facf()
+    std::expected<void, error> opencall()
     {
-        _last_type = symbol_table::type::FUNCTION;
-        _assigned_type = _last_type;
+        _last_type = get_return(_last_id);
+        _return_type.push(_last_type);
         return check_expected(_last_type);
     }
 
+    std::expected<void, error> closecall()
+    {
+        _last_type = _return_type.top();
+        _assigned_type = _last_type;
+        _return_type.pop();
+        return check_expected(_last_type);
+    }
 
     std::expected<void, error> check_expected(symbol_table::type type)
     {
@@ -307,6 +328,7 @@ struct semantic_analyzer
     std::expected<void, error> assign_open()
     {
         _assign_type = _last_type;
+        _assign_id = _last_id;
         return {};
     }
 
@@ -321,6 +343,16 @@ struct semantic_analyzer
         if(_assign_type==symbol_table::type::BOOLEAN)
             return std::unexpected(error("Semantic Error! Can not assign integer to boolean."));
 
+        if(_assign_type==symbol_table::type::PROCEDURE)
+            return std::unexpected(error("Semantic Error! Can not assign to procedure."));
+
+        if(_assign_type==symbol_table::type::FUNCTION)
+        {
+            if(_assign_id != _current_scope_name)
+                return std::unexpected(error("Semantic Error! Can not assign to non owned function."));
+            if(get_return(_assign_id)!=_assigned_type)
+                return std::unexpected(error("Semantic Error! Return value type missmatch."));
+        }
         return {};
     }
 
@@ -353,10 +385,12 @@ struct semantic_analyzer
     symbol_table& current_scope() { return _scopes.front(); }
 
     std::string _last_id {};
+    std::string _assign_id {};
     lexeme _last_value{};
 
     symbol_table::type _assign_type { symbol_table::type::VOID };
     symbol_table::type _assigned_type { symbol_table::type::VOID };
+    std::stack<symbol_table::type> _return_type {};
 
     symbol_table::type _expression_type { symbol_table::type::VOID };
 
@@ -365,7 +399,7 @@ struct semantic_analyzer
     std::stack<symbol_table::type> _next_type { std::deque<symbol_table::type>{ symbol_table::type::VOID } };
 
     std::string _current_scope_name {};
-    std::vector<symbol_table::type> _tmp_aparams {};
+    std::stack<std::vector<symbol_table::type>> _tmp_aparams {};
     std::vector<std::string> _tmp_vars    {};
     std::vector<std::string> _tmp_fparams {};
     std::deque<symbol_table> _scopes { 1 };

@@ -11,7 +11,12 @@ struct symbol_table
     bool push(const std::string& symbol, type symbol_type)
     {
         /* Si se inserta (no duplicados) retorna true */
-        return _types.insert({symbol, symbol_type}).second;
+        bool inserted = _types.insert({symbol, symbol_type}).second;
+        if(inserted && (symbol_type == type::FUNCTION || symbol_type == type::PROCEDURE))
+            _fparams_types.insert({symbol, {}});
+
+
+        return inserted;
     }
 
     void push_fparam(const std::string& subrutine, type symbol_type)
@@ -43,6 +48,12 @@ struct symbol_table
     {
         _return_types[symbol] = t;   
     }
+
+    type get_return(const std::string& symbol) const
+    {
+        return _return_types.at(symbol);
+    }
+
 
     type scope_return = type::VOID;
     std::map<std::string, type> _types {};

@@ -131,7 +131,7 @@ using FACTOR =
 
 using FACTOR1 = 
     rules<
-        rh<T(OPEN_PARENTHESIS), S(lfunc), N(PARAMETROS_ACTUALES), S(check_call), T(CLOSE_PARENTHESIS)>,
+        rh<T(OPEN_PARENTHESIS), S(lfunc), S(opencall), N(PARAMETROS_ACTUALES), S(check_call), T(CLOSE_PARENTHESIS), S(closecall)>,
         rh<>
     >;
 

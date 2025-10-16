@@ -2,16 +2,31 @@ PROGRAM myProgram;
 var x, a, z : Integer;
     c : Boolean;
 
-function sumar() : Integer;
-begin 
+function restar(x, y : Integer) : Integer;
+begin
+    restar := x-y;
 end;
 
+function sumar(x, y : Integer) : Integer;
+begin
+    sumar := a;
+end;
+
+function comparar(x, y : Integer) : Boolean;
+begin
+    comparar := x < y;
+end;
+
+procedure contar(x : Integer);
+begin
+    c := comparar(3, 2);
+end;
 begin
     write(a);
-    a := sumar();
+    a := sumar(3, a);
     a := (2*a*(2+2));
-    c := (write() < 2) and c;
+    c := (sumar(2, 33) < 2) and c;
     z := ((a + (2 * 4)));
-    if ((a < z) or true) then z := 2*a*(2+2);
+    if ((a < z) or comparar(a, sumar(1, 2))) then z := 2*a*(2+2);
 end.
 
