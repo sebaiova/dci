@@ -161,7 +161,8 @@ struct semantic_analyzer
     {
         if(_last_type == symbol_table::type::PROCEDURE)
         {
-            _tmp_aparams.push(get_fparams(_last_id));            
+            auto fparams = get_fparams(_last_id);
+            _tmp_aparams.emplace(fparams.begin(), fparams.end());            
             return {};
         }
 
@@ -172,7 +173,8 @@ struct semantic_analyzer
     {
         if(_last_type == symbol_table::type::FUNCTION)
         {
-            _tmp_aparams.push(get_fparams(_last_id));            
+            auto fparams = get_fparams(_last_id);
+            _tmp_aparams.emplace(fparams.begin(), fparams.end());             
             return {};
         }
 
@@ -184,10 +186,10 @@ struct semantic_analyzer
         if(_tmp_aparams.top().empty())
             return std::unexpected(std::format("Semantic Error: Incorrect number of parameters."));
 
-        if(_tmp_aparams.top().back()!=_last_type)
+        if(_tmp_aparams.top().front()!=_last_type)
             return std::unexpected(std::format("Semantic Error: Type mismatch in subrutine call."));
 
-        _tmp_aparams.top().pop_back();
+        _tmp_aparams.top().pop_front();
         return {};
     }
 
@@ -399,7 +401,7 @@ struct semantic_analyzer
     std::stack<symbol_table::type> _next_type { std::deque<symbol_table::type>{ symbol_table::type::VOID } };
 
     std::string _current_scope_name {};
-    std::stack<std::vector<symbol_table::type>> _tmp_aparams {};
+    std::stack<std::deque<symbol_table::type>> _tmp_aparams {};
     std::vector<std::string> _tmp_vars    {};
     std::vector<std::string> _tmp_fparams {};
     std::deque<symbol_table> _scopes { 1 };
