@@ -85,7 +85,9 @@ std::expected<void, error> lexical_analyzer::token_register(const symbol& s)
     token_stream.push_back(s);
     if(s.attribute)
     {
-        auto ok = _semantic.analyze_symbol(*s.attribute);
+        std::string symbol = *s.attribute;
+        std::transform(symbol.begin(), symbol.end(), symbol.begin(), [](unsigned char c){ return std::tolower(c);});
+        auto ok = _semantic.analyze_symbol(symbol);
         if (not ok)
             return std::unexpected(ok.error().msg + std::format(" Seen at line {} and column {}.", line, col) ); 
     }
