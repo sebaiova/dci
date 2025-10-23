@@ -157,7 +157,7 @@ using OPERADOR_TERMINOS =
     rules<
         rh<T(ADD), S(lint), S(nint)>,
         rh<T(SUB), S(lint), S(nint)>,
-        rh<T(OR), S(lbool), S(lbool)>
+        rh<T(OR), S(lbool), S(nbool)>
     >;
 
 using LISTA_DECLARACION_VARIABLES = 
