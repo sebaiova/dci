@@ -108,6 +108,9 @@ struct semantic_analyzer
         push_symbol("write", symbol_table::type::PROCEDURE);
         current_scope().push_fparam("write", symbol_table::type::INTEGER);
 
+        push_symbol("read", symbol_table::type::FUNCTION);
+        current_scope().set_return("read", symbol_table::type::INTEGER);
+
         return {};
     }
 

@@ -17,13 +17,16 @@ begin
     comparar := x < y;
 end;
 
-procedure contar(x : Integer);
+procedure contar(x, y, z : Integer; n, c : Boolean);
 begin
     c := comparar(3, 2);
 end;
 begin
+    contar(1, 2, 2, true, false);
+    c := read();
+
     write(a);
-    a := sumar(3, a);
+    a := sumar(a, 3);
     a := (2*a*(2+2));
     c := (sumar(2, 33) < 2) and c;
     z := ((a + (2 * 4)));
