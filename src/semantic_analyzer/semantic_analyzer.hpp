@@ -259,6 +259,7 @@ struct semantic_analyzer
     std::expected<void, error> faci()
     {
         _last_type =  symbol_table::type::INTEGER;
+        _expression_type = symbol_table::type::INTEGER;
         _assigned_type = _last_type;
         return check_expected(_last_type);
     }
@@ -266,6 +267,7 @@ struct semantic_analyzer
     std::expected<void, error> facs()
     {
         _last_type = get_type(_last_id);
+        _expression_type = _last_type;
         _assigned_type = _last_type;
         return check_expected(_last_type);
     }
@@ -273,6 +275,7 @@ struct semantic_analyzer
     std::expected<void, error> facb()
     {
         _last_type = symbol_table::type::BOOLEAN;
+        _expression_type = symbol_table::type::BOOLEAN;
         _assigned_type = _last_type;
         return check_expected(_last_type);
     }
@@ -378,6 +381,12 @@ struct semantic_analyzer
     {
         if(_next_type.top()==symbol_table::type::VOID)
             return {};
+
+        if(_expression_type != _next_type.top() && _next_type.top()==symbol_table::type::INTEGER)
+            return std::unexpected(error("Semantic Error! Expected expression evaluated to integer."));
+
+        if(_expression_type != _next_type.top() && _next_type.top()==symbol_table::type::BOOLEAN)
+            return std::unexpected(error("Semantic Error! Expected expression evaluated to boolean."));
 
         if(_expression_type != _next_type.top())
             return std::unexpected(error("Semantic Error! Report me."));

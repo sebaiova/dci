@@ -103,7 +103,7 @@ using SENTENCIA_COMPUESTA =
 
 using EXPRESION = 
     rules<
-        rh<N(EXPRESION_SIMPLE), S(expi), N(EXPRESION1)>
+        rh<N(EXPRESION_SIMPLE), N(EXPRESION1)>
     >;
 
 using EXPRESION1 =  
