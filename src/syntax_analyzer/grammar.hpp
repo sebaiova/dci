@@ -98,7 +98,7 @@ using SENTENCIA_SIMPLE1 =
 
 using SENTENCIA_COMPUESTA = 
     rules<
-        rh<T(BEGIN), N(LISTA_SENTENCIAS), T(END), S(pop_scope)>
+        rh<T(BEGIN), N(LISTA_SENTENCIAS), T(END)>
     >;
 
 using EXPRESION = 
@@ -173,12 +173,12 @@ using PARAMETROS_FORMALES =
 
 using PROCEDIMIENTO = 
     rules<
-        rh<T(PROCEDURE), S(procedure), T(IDENTIFIER), S(ready), S(push_scope), N(PARAMETROS_FORMALES), T(SEMI_COLON), N(BLOQUE)>
+        rh<T(PROCEDURE), S(procedure), T(IDENTIFIER), S(ready), S(push_scope), N(PARAMETROS_FORMALES), T(SEMI_COLON), N(BLOQUE), S(pop_scope)>
     >;
 
 using FUNCION = 
     rules<
-        rh<T(FUNCTION), S(function), T(IDENTIFIER), S(ready), S(push_scope), N(PARAMETROS_FORMALES), T(COLON), S(function), N(DATA_TYPE), T(SEMI_COLON), S(ready), N(BLOQUE)>
+        rh<T(FUNCTION), S(function), T(IDENTIFIER), S(ready), S(push_scope), N(PARAMETROS_FORMALES), T(COLON), S(function), N(DATA_TYPE), T(SEMI_COLON), S(ready), N(BLOQUE), S(pop_scope)>
     >;
 
 using SUBRUTINA = 

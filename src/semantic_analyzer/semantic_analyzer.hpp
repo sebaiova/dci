@@ -103,13 +103,13 @@ struct semantic_analyzer
     }
 
     std::expected<void, error> program()
-    {
+    {        
         _current_state = state::PROGRAM;
         push_symbol("write", symbol_table::type::PROCEDURE);
         current_scope().push_fparam("write", symbol_table::type::INTEGER);
 
-        push_symbol("read", symbol_table::type::FUNCTION);
-        current_scope().set_return("read", symbol_table::type::INTEGER);
+        push_symbol("read", symbol_table::type::PROCEDURE);
+        current_scope().push_fparam("read", symbol_table::type::INTEGER);
 
         return {};
     }
@@ -162,7 +162,7 @@ struct semantic_analyzer
 
     std::expected<void, error> lproc()
     {
-        if(_last_type == symbol_table::type::PROCEDURE)
+        if(get_type(_last_id) == symbol_table::type::PROCEDURE)
         {
             auto fparams = get_fparams(_last_id);
             _tmp_aparams.emplace(fparams.begin(), fparams.end());            
@@ -174,7 +174,7 @@ struct semantic_analyzer
 
     std::expected<void, error> lfunc()
     {
-        if(_last_type == symbol_table::type::FUNCTION)
+        if(get_type(_last_id) == symbol_table::type::FUNCTION)
         {
             auto fparams = get_fparams(_last_id);
             _tmp_aparams.emplace(fparams.begin(), fparams.end());             
@@ -267,6 +267,9 @@ struct semantic_analyzer
     std::expected<void, error> facs()
     {
         _last_type = get_type(_last_id);
+        if(_last_type == symbol_table::type::FUNCTION)
+            _last_type = get_return(_last_id);
+
         _expression_type = _last_type;
         _assigned_type = _last_type;
         return check_expected(_last_type);
@@ -382,7 +385,8 @@ struct semantic_analyzer
         if(_next_type.top()==symbol_table::type::VOID)
             return {};
 
-        if(_expression_type != _next_type.top() && _next_type.top()==symbol_table::type::INTEGER)
+        return check_expected(_expression_type);
+     /*   if(_expression_type != _next_type.top() && _next_type.top()==symbol_table::type::INTEGER)
             return std::unexpected(error("Semantic Error! Expected expression evaluated to integer."));
 
         if(_expression_type != _next_type.top() && _next_type.top()==symbol_table::type::BOOLEAN)
@@ -390,7 +394,7 @@ struct semantic_analyzer
 
         if(_expression_type != _next_type.top())
             return std::unexpected(error("Semantic Error! Report me."));
-
+*/
         return {};
     }
 
