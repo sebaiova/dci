@@ -3,10 +3,12 @@
 #include "ll1.hpp"
 #include "non_terminal.hpp"
 #include <semantic_analyzer.hpp>
+#include <mepa_generator.hpp>
 
 #define T(TOKEN) lexeme::TOKEN 
 #define N(TOKEN) non_terminal::TOKEN
 #define S(FUNC) &semantic_analyzer::FUNC
+#define G(FUNC) &mepa_generator::FUNC
 
 using PARAMETRO_FORMAL = 
     rules<
@@ -206,7 +208,7 @@ using BLOQUE =
 
 using PROGRAMA =    
     rules<
-        rh<T(PROGRAM), S(program), T(IDENTIFIER), S(ready), T(SEMI_COLON), N(BLOQUE), T(DOT)>
+        rh<T(PROGRAM), S(program), T(IDENTIFIER), G(program), S(ready), T(SEMI_COLON), N(BLOQUE), T(DOT)>
     >;
 
 using START = PROGRAMA;

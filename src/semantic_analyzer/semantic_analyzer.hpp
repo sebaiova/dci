@@ -1,6 +1,6 @@
 #pragma once
 
-#include "error.hpp"
+#include <error.hpp>
 #include <lexemes.hpp>
 #include "symbol_table.hpp"
 #include <string>

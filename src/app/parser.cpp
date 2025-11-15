@@ -18,8 +18,9 @@ parser::~parser()
 auto parser::run() -> std::expected<void, error>
 {
     auto semantical { semantic_analyzer() };
+    auto mepa { mepa_generator() };
     auto lexical { lexical_analyzer(str, token_stream, semantical) };
-    auto syntax  { syntax_analyzer(lexical, semantical) };
+    auto syntax  { syntax_analyzer(lexical, semantical, mepa) };
 
     return syntax.start();
 }

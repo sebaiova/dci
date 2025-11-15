@@ -6,8 +6,8 @@
 #include "grammar.hpp"
 #include <error.hpp>
 
-syntax_analyzer::syntax_analyzer(lexical_analyzer& lexical, semantic_analyzer& semantical) :
-    _lexical { lexical }, _semantical { semantical }
+syntax_analyzer::syntax_analyzer(lexical_analyzer& lexical, semantic_analyzer& semantical, mepa_generator& mepa) :
+    _lexical { lexical }, _semantical { semantical }, _mepa { mepa }
 {
 
 }
@@ -53,7 +53,7 @@ auto syntax_analyzer::start() -> std::expected<void, error>
         return result;
 
 
-    if(auto result = rule<START>::run(*this, _semantical); not result)
+    if(auto result = rule<START>::run(*this, _semantical, _mepa); not result)
         return std::unexpected(result.error());
 
     if(auto result = demand_token(); not result)

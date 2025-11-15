@@ -10,4 +10,5 @@ target_link_libraries(syntax_analyzer
             common
             semantic_analyzer
             lexical_analyzer
+            mepa_generator
             )
