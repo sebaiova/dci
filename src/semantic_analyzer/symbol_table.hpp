@@ -51,7 +51,6 @@ struct symbol_table
             if (symbol_type == type::INTEGER || symbol_type == type::BOOLEAN)
             {
                 _addresses[symbol] = _current_fparam_address;
-                std::cout << symbol << ":... " << _current_fparam_address << "\n";
                 _current_fparam_address--; // Decrementa para el siguiente parámetro
                 return true;
             }
@@ -61,7 +60,6 @@ struct symbol_table
 
     bool push_return_symbol(const std::string& symbol, type symbol_type)
     {
-        std::cout << symbol << ":<> " << _current_fparam_address << "\n";
         _addresses[symbol] = _current_fparam_address;
         _current_fparam_address--; // Decrementa para el siguiente parámetro
         return true;

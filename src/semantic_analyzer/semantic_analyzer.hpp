@@ -210,8 +210,6 @@ struct semantic_analyzer
         for(auto it = _tmp_fparams.rbegin(); it != _tmp_fparams.rend(); ++it)
         {
             auto symbol = *it;
-                    std::cout << "Fparam: " << symbol << "\n" ;
-
             auto ok = current_scope().push_fparam_symbol(symbol, type);
             if(not ok)
                 return std::unexpected(error(std::format("Semantic Error: \"{}\" is already defined.", symbol)));
@@ -423,19 +421,12 @@ struct semantic_analyzer
     }
 
 
-    symbol_table& current_scope() { return _scopes.front(); }
+          symbol_table& current_scope()         { return _scopes.front(); }
+    const symbol_table& current_scope() const   { return _scopes.front(); }
 
     size_t get_local_var_count(const std::string& scope_name) const
     {
-        for (auto& scope : _scopes)
-        {
-            std::cout << scope_name << "\t" << scope.get_name() << "\n";
-          //  if (scope.get_name() == scope_name)
-           // {
-                return scope.count_variables(); 
-           // }
-        }
-        return 0; // Si no se encuentra el alcance (aunque no debería pasar si la llamada es válida).
+        return current_scope().count_variables(); 
     }
 
     int get_address(const std::string& symbol) const
