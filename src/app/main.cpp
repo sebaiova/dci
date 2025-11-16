@@ -22,7 +22,7 @@ int main(int argc, char** argv)
     else
     {
      auto success { open(argv[1]).and_then([](auto str){
-   //  auto success { open("../../example.txt").and_then([](auto str){
+  //   auto success { open("../../example.txt").and_then([](auto str){
         parser p(str); 
             return p.run(); 
         })};

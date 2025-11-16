@@ -1,17 +1,22 @@
-PROGRAM IOTest;
-VAR X, Y : INTEGER;
-    a : boolean;
-
+PROGRAM Prueba;
+VAR a, b : Integer;
+function factorial(x : Integer) : Integer;
+var q, w, e : Integer;
+begin
+    read(q);
+    e := q+q+q;
+    write(e);
+    if x < 2 then factorial := 1
+    else
+        factorial := x*factorial(x-1);
+end;
+procedure chacha(x : Integer);
+begin
+    write(x*2);
+end;
 BEGIN
-    WRITE(A);
-    
-    READ(Y); 
-    
-    WRITE(X);
-    Y := 10;
-
-    IF X > Y THEN
-        WRITE(X - Y)
-    ELSE
-        WRITE(Y - X);
+    chacha(3);
+    read(b);
+    a := factorial(b);
+    write(a);
 END.

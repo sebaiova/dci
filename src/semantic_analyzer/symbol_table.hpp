@@ -22,16 +22,13 @@ struct symbol_table
         bool inserted = _types.insert({symbol, symbol_type}).second;
         
         if (inserted) {
-            // 1. Asignar dirección de memoria solo a elementos que requieren espacio (vars/params/subrutinas).
-            // NOTA: PROGRAM, PROCEDURE, FUNCTION reciben una dirección (donde inicia su código)
-            //       INTEGER y BOOLEAN (variables/parámetros) reciben una dirección de datos.
-
+            // Asignar dirección de memoria solo a variables locales (desplazamiento >= 0).
+            // NOTA: Los parámetros formales usan direcciones negativas.
             if (symbol_type == type::INTEGER || symbol_type == type::BOOLEAN) {
                 _addresses[symbol] = _current_address++; // Asignar la próxima dirección libre
             } else if (symbol_type == type::FUNCTION || symbol_type == type::PROCEDURE) {
+                // Inicializar la lista de parámetros para la subrutina
                 _fparams_types.insert({symbol, {}});
-                // Se podría reservar una dirección de código (ej. una etiqueta) aquí si fuera necesario
-                // Pero, por ahora, solo necesitamos contar variables de datos.
             }
         }
         
@@ -40,6 +37,7 @@ struct symbol_table
 
     void push_fparam(const std::string& subrutine, type symbol_type)
     {
+        // Almacena el tipo del parámetro formal en la definición de la subrutina
         _fparams_types[subrutine].push_back(symbol_type);
     }
 
@@ -49,17 +47,25 @@ struct symbol_table
         bool inserted = _types.insert({symbol, symbol_type}).second;
         if (inserted)
         {
-            // 2. Asignar la dirección negativa (de forma decremental)
+            // 2. Asignar la dirección negativa para parámetros (-1, -2, -3...)
             if (symbol_type == type::INTEGER || symbol_type == type::BOOLEAN)
             {
                 _addresses[symbol] = _current_fparam_address;
-                _current_fparam_address--; // Decrementa para el siguiente parámetro (-2, -3, -4...)
+                std::cout << symbol << ":... " << _current_fparam_address << "\n";
+                _current_fparam_address--; // Decrementa para el siguiente parámetro
                 return true;
             }
         }
         return inserted;
     }
 
+    bool push_return_symbol(const std::string& symbol, type symbol_type)
+    {
+        std::cout << symbol << ":<> " << _current_fparam_address << "\n";
+        _addresses[symbol] = _current_fparam_address;
+        _current_fparam_address--; // Decrementa para el siguiente parámetro
+        return true;
+    }
 
     bool check(const std::string& symbol) const
     {
@@ -73,7 +79,10 @@ struct symbol_table
 
     std::vector<type> get_fparams(const std::string& subrutine_symbol) const
     {
-        return _fparams_types.at(subrutine_symbol);
+        if (_fparams_types.contains(subrutine_symbol)) {
+            return _fparams_types.at(subrutine_symbol);
+        }
+        return {};
     }
 
     void set_scope_return(type t)
@@ -88,15 +97,18 @@ struct symbol_table
 
     type get_return(const std::string& symbol) const
     {
-        return _return_types.at(symbol);
+        if (_return_types.contains(symbol)) {
+            return _return_types.at(symbol);
+        }
+        return type::VOID;
     }
 
     size_t count_variables() const
     {
         size_t count = 0;
         for (const auto& pair : _addresses) {
-            // Solo contamos variables locales (direcciones >= 0)
-            // Excluye parámetros formales (direcciones < 0)
+            // Solo contamos variables locales (direcciones >= 0),
+            // excluyendo parámetros formales (direcciones < 0).
             if (pair.second >= 0) { 
                 count++;
             }
@@ -109,15 +121,20 @@ struct symbol_table
         if (_addresses.contains(symbol)) {
             return _addresses.at(symbol);
         }
-        // Devolver un valor que indique error o no encontrado si es necesario
-        return -1; 
+        return -9999; // Usar un valor distinto de -1 para indicar claramente un fallo
     }
 
-    int _current_address = 0;
-    int _current_fparam_address = -2;
+    // MEPA: Devuelve el desplazamiento 'n' de un símbolo
+    int get_offset(const std::string& symbol) const
+    {
+        return get_address(symbol);
+    }
+
+    int _current_address = 0; // Para variables locales: 0, 1, 2, ...
+    int _current_fparam_address = -3; // [CORREGIDO] Para parámetros: -1, -2, -3, ... (El primer parámetro es D[L] - 1)
     std::string _scope_name;
     type scope_return = type::VOID;
-    std::map<std::string, int> _addresses {};
+    std::map<std::string, int> _addresses {}; // Desplazamiento (offset)
     std::map<std::string, type> _types {};
     std::map<std::string, std::vector<type>> _fparams_types {};
     std::map<std::string, type> _return_types {};

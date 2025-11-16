@@ -3,55 +3,71 @@
 #include <iostream>
 #include <fstream>
 #include <stack>
-#include <semantic_analyzer.hpp>
+#include <map>
+#include <string>
+#include <format> // Asegúrate de que tu compilador soporta std::format
+#include <semantic_analyzer.hpp> // Asumo que esta clase es funcional
 
 struct mepa_generator 
 {
     mepa_generator(const semantic_analyzer& sem) : _sem { sem } 
     {
-
+        // Abrir el archivo de salida
+        // Podrías añadir un manejo de errores aquí si la apertura falla
     }
+
+    // ----------------------------------------------------------------------
+    // 1. ESTRUCTURA DEL PROGRAMA
+    // ----------------------------------------------------------------------
 
     void program_begin()
     {
-        file << "INPP\n";
-        file << "JMP MAIN\n";
+        // INPP: Inicializa s = -1, D[0] = 0.
+        write_instruction("INPP");
+        // DSVS TAG_MAIN: Salto al código principal, después de la definición de procedimientos.
+        write_instruction("DSVS L0");
     }
+
+ 
 
     void program_end()
     {
-        file << "PARA\n";
+        // PARA: Finaliza la ejecución.
+        write_instruction("PARA");
     }
 
     void program_tag()
     {
-        file << std::format("MAIN:\n", _sem._current_scope_name);
+        // Coloca la etiqueta de inicio del programa.
+        set_tag("L0");
+        stack_enter();
     }
+
 // ----------------------------------------------------------------------
 // 2. ESTRUCTURAS DE CONTROL DE FLUJO
 // ----------------------------------------------------------------------
 
-    // G(if_begin) - Después de evaluar la EXPRESION y S(lbool)
+    // G(if_begin) - Después de evaluar la EXPRESION (valor booleano en M[s])
     void if_begin()
     {
-        // Genera JUMP-F (JUMP-FALSE) a la etiqueta de salto (ELSE o IF_END).
-        file << std::format("JMPF L{}\n", label_counter);
-        label_stack.push(label_counter);
+        // Genera DSVF (Desvío si Falso) al TAG que marca el inicio del ELSE o IF_END.
+        write_instruction(std::format("DSVF L{}", label_counter));
+        label_stack.push(label_counter); // Guarda L_if_skip (para ELSE/IF_END)
         label_counter++;
     }
 
     // G(else_begin) - Antes de la SENTENCIA del ELSE
     void else_begin()
     {
-        // Recupera la etiqueta L_if_skip (donde debería saltar el JMPF).
+        // Recupera la etiqueta L_if_skip (donde debería saltar el JMPF original).
         int if_label = label_stack.top();
         label_stack.pop();
 
-        // 1. Genera JUMP incondicional para saltar el bloque ELSE.
-        file << std::format("JMP L{}\n", label_counter);
+        // 1. Genera DSVS (Desvío incondicional) para saltar el bloque ELSE si se ejecutó IF.
+        write_instruction(std::format("DSVS L{}", label_counter));
         
-        // 2. Coloca la etiqueta L_if_skip para el inicio del ELSE.
-        file << std::format("L{}:\n", if_label);
+        // 2. Coloca la etiqueta L_if_skip (inicio del ELSE o IF_END si no hay ELSE).
+        set_tag(std::format("L{}", if_label));
         
         // 3. Empuja la nueva etiqueta (L_else_end) para el final de la estructura.
         label_stack.push(label_counter);
@@ -59,30 +75,30 @@ struct mepa_generator
     }
 
     // G(if_end) - Al final de SENTENCIA_ELSE (o SENTENCIA si no hay ELSE)
-   void if_end()
+    void if_end()
     {
         // Recupera la etiqueta L_end.
         int end_label = label_stack.top();
         label_stack.pop();
         
         // Coloca la etiqueta de final.
-        file << std::format("L{}:\n", end_label);
+        set_tag(std::format("L{}", end_label));
     }
 
     // G(while_mark) - Antes de la EXPRESION en el WHILE
     void while_mark()
     {
-        // Marca la etiqueta de inicio del bucle.
+        // Marca la etiqueta de inicio del bucle (L_start).
         label_stack.push(label_counter);
-        file << std::format("L{}:\n", label_counter);
+        set_tag(std::format("L{}", label_counter));
         label_counter++;
     }
 
-    // G(while_begin) - Después de evaluar la EXPRESION y S(lbool)
+    // G(while_begin) - Después de evaluar la EXPRESION (valor booleano en M[s])
     void while_begin()
     {
-        // Genera JUMP-F (JUMP-FALSE) para salir del bucle.
-        file << std::format("JMPF L{}\n", label_counter);
+        // Genera DSVF (Desvío si Falso) para salir del bucle.
+        write_instruction(std::format("DSVF L{}", label_counter));
 
         // Guarda la etiqueta de salida del bucle (L_exit).
         label_stack.push(label_counter);
@@ -100,71 +116,87 @@ struct mepa_generator
         int start_label = label_stack.top();
         label_stack.pop();
 
-        // 3. Genera el salto incondicional al inicio del bucle.
-        file << std::format("JMP L{}\n", start_label);
+        // 3. Genera el salto incondicional al inicio del bucle (L_start).
+        write_instruction(std::format("DSVS L{}", start_label));
 
-        // 4. Coloca la etiqueta de salida.
-        file << std::format("L{}:\n", exit_label);
+        // 4. Coloca la etiqueta de salida (L_exit).
+        set_tag(std::format("L{}", exit_label));
     }
 
 // ----------------------------------------------------------------------
 // 3. EXPRESIONES, ASIGNACIÓN Y CARGA
 // ----------------------------------------------------------------------
 
-    // G(load_const) - Carga una constante (número, TRUE, FALSE)
-    // Nota: Necesita que S() pase el valor. Aquí simulamos pasando 0.
+    // G(load_const) - Carga una constante (número, TRUE=1, FALSE=0)
     void load_const()
     {
-        file << std::format("PUSH {}\n", _sem._last_attribute); // Si _last_attribute contiene el número
-        //file << "PUSH [valor]\n"; 
+        // APCT k: Apila la constante k.
+        write_instruction(std::format("APCT {}", _sem._last_attribute));
     }
 
-    // G(load_var) - Carga el valor de una variable (IDENTIFIER)
     void load_var()
     {
-        // Usar la última ID verificada para obtener su dirección del semántico.
-        int dir = _sem.get_address(_sem._last_id);
-        if(dir!=-1)    // Si no es id de subrutina
-            file << std::format("LOAD {}\n", dir);
+        if (_sem.get_type(_sem._last_id) == symbol_table::type::FUNCTION)
+        {
+            write_instruction("RMEM 1");
+            return;
+        }
+
+        // MEPA usa APVL m, n: Apila el valor de la variable en M[D[m]+n].
+        // La diferencia de nivel 'm' ahora es manejada por _sem.get_level()
+        // (y devuelve 1 para parámetros).
+        int level = _sem.get_level(_sem._last_id); // Usa la función correcta: get_level
+        int offset = _sem.get_offset(_sem._last_id);
+
+        // El offset -9999 es el valor de error de symbol_table.hpp.
+        if (offset != -9999) {
+            write_instruction(std::format("APVL {}, {}", level, offset));
+        } 
     }
 
-    // G(assign) - Asignación (el valor ya está en la pila)
+    // G(assign) - Asignación (el valor a asignar ya está en la pila, M[s])
     void assign()
     {
-        // Usar el ID de asignación del semántico.
-        int dir = _sem.get_address(_sem._assign_id);
+        // El valor a asignar ya está en M[s].
+
+        // 1. Caso especial: Asignación al valor de retorno de la función (ej: factorial := x;)
+       /* if (_sem.is_function_return_assignment(_sem._assign_id))
+        {
+            // ALVL 1, -1: Asigna M[s] a la celda de retorno (-1) del llamador (diferencia de nivel 1).
+            write_instruction(std::format("ALVL 1, -1"));
+            return;
+        }*/
+
+        // 2. Caso normal: Asignación a una variable (local, parámetro o global).
+        // MEPA usa ALVL m, n: Asigna M[s] a M[D[m]+n] y s := s - 1.
+        int level = _sem.get_level(_sem._assign_id); // Usa la función correcta: get_level
+        int offset = _sem.get_offset(_sem._assign_id);
     
-        if(dir!=-1) // Si no es valor de retorno
-            file << std::format("POP {}\n", dir);
+        // Verificar si la búsqueda fue exitosa (no devolvió el valor de error -9999)
+        if (offset != -9999) { 
+            write_instruction(std::format("ALVL {}, {}", level, offset));
+        }
     }
 
-    // G(add_op) - Operador de suma
-    void add_op() { file << "ADD\n"; }
-    
-    // G(sub_op) - Operador de resta (binario)
-    void sub_op() { file << "SUB\n"; }
-    
-    // G(mult_op) - Operador de multiplicación
-    void mult_op() { file << "MULT\n"; }
-    
-    // G(div_op) - Operador de división
-    void div_op() { file << "DIV\n"; }
-    
-    // G(or_op) - Operador OR lógico
-    void or_op() { file << "OR\n"; }
-    
-    // G(and_op) - Operador AND lógico
-    void and_op() { file << "AND\n"; }
+    // Operadores Aritméticos y Lógicos Binarios
+    void add_op() { write_instruction("SUMA"); }
+    void sub_op() { write_instruction("SUST"); }
+    void mult_op() { write_instruction("MULT"); }
+    void div_op() { write_instruction("DIVI"); }
+    void or_op() { write_instruction("DISJ"); }
+    void and_op() { write_instruction("CONJ"); }
 
-    // G(not_op) - Operador NOT lógico
-    void not_op() { file << "NOT\n"; } 
+    // Operadores Unarios
+    void unary_sub_op() { write_instruction("UMEN"); } // Menos unario (-)
+    void not_op() { write_instruction("NEGA"); } 
 
-    void eq_op() { file << "EQ\n"; } 
-    void neq_op() { file << "NE\n"; } 
-    void min_op() { file << "LT\n"; } 
-    void maj_op() { file << "GT\n"; } 
-    void mineq_op() { file << "LE\n"; } 
-    void majeq_op() { file << "GE\n"; } 
+    // Operadores Relacionales
+    void eq_op() { write_instruction("CMIG"); } // Igual (=)
+    void neq_op() { write_instruction("CMDG"); } // Distinto (!=)
+    void min_op() { write_instruction("CMME"); } // Menor (<)
+    void maj_op() { write_instruction("CMMA"); } // Mayor (>)
+    void mineq_op() { write_instruction("CMNI"); } // Menor o Igual (<=)
+    void majeq_op() { write_instruction("CMYI"); } // Mayor o Igual (>=)
 
 
 // ----------------------------------------------------------------------
@@ -174,59 +206,107 @@ struct mepa_generator
     // G(proc_entry) - Etiqueta de inicio de un procedimiento o función
     void proc_entry()
     {
-        file << std::format("PROC_{}:\n", _sem._current_scope_name);
+        // Etiqueta del procedimiento.
+        set_tag(std::format("L{}", _sem._current_scope_name));
     }
 
     void stack_enter()
     {
-        // La instrucción ENTER se usa para ganar espacio para variables locales.
-        int local_size = _sem.get_local_var_count(_sem._current_scope_name);
-        file << std::format("ENTER {}\n", local_size); 
+        // ENTRADA A PROCEDIMIENTO (MEPA no usa RMEM para variables locales)
+        // La MEPA usa ENPR para registrar el display y apuntar al nuevo marco de pila.
+        // Asumo que el semántico ya reservó espacio para los parámetros en el marco anterior.
+        // Por la especificación de MEPA, las variables locales *siempre* van al inicio del marco,
+        // después de los campos de control (D[k] y i+1), pero antes de los parámetros.
+
+        // Ajustamos la lógica para usar RMEM/LMEM para las variables locales, si no son parámetros.
+        // Si ENPR se utiliza como entrada al procedimiento, la documentación es confusa.
+        // Vamos a implementar la versión más simple:
+        // 1. Entrada de control (ENPR)
+        // 2. Reserva de espacio para locales (RMEM)
+        
+        // ENPR: Maneja el display D[k] := s+1
+        int level = _sem.get_current_level();
+        write_instruction(std::format("ENPR {}", level)); 
+        
+        // RMEM: Reserva espacio para variables locales (si las hay)
+        int local_var_count = _sem.get_local_var_count(_sem._current_scope_name);
+        if (local_var_count > 0) {
+             write_instruction(std::format("RMEM {}", local_var_count));
+        }
     }
 
-    // G(proc_exit) - Fin de un procedimiento
+    // G(proc_exit) - Fin de un procedimiento (liberación de espacio y retorno)
     void proc_exit()
     {
-        // RETURN libera espacio y vuelve al punto de llamada.
-        int param_count = _sem.get_fparams(_sem._current_scope_name).size();
-        file << std::format("RETURN {}\n", param_count); 
+        // LMEM: Libera variables locales ANTES de RTPR.
+        int local_var_count = _sem.get_local_var_count(_sem._current_scope_name);
+        if (local_var_count > 0) {
+             write_instruction(std::format("LMEM {}", local_var_count));
+        }
+
+        // RTPR k, n: Retorna de proc. Libera el marco (parámetros y control) y devuelve el display.
+        // k es el nivel léxico del llamador. n es la cantidad de parámetros.
+        int caller_level = _sem.get_current_level(); 
+        if (caller_level < 0) caller_level = 0; // Para el programa principal (Nivel 0)
+
+        int param_count = _sem.get_fparams(_sem._current_scope_name).size(); 
+        write_instruction(std::format("RTPR {}, {}", caller_level, param_count)); 
     }
 
-    // G(func_entry) - Igual que proc_entry, se distingue en el manejo del retorno.
+    // G(func_entry) - Igual que proc_entry.
     void func_entry() { return proc_entry(); }
 
-    // G(func_exit) - Fin de una función
+    // G(func_exit) - Igual que proc_exit. La gestión del valor de retorno debe hacerse
+    // antes de llamar a func_exit (ej: APVL del valor de retorno, y luego la instrucción de asignación).
     void func_exit() { return proc_exit(); }
 
     // G(proc_call) - Llamada a un procedimiento
-    // G(func_call) - Llamada a una función
-    // Asumen que los parámetros ya fueron pusheados a la pila.
     void proc_call()
     {
-        // Llama a la dirección/etiqueta de la subrutina.
-        file << std::format("CALL PROC_{}\n", _sem._called.top());
+        // LLPR p: Salta a la dirección p (la etiqueta del procedimiento).
+        std::string proc_name = _sem._called.top();
+        write_instruction(std::format("LLPR L{}", proc_name));
     }
     
+    // G(func_call) - Llamada a una función
     void func_call()
     {
-        // Asume que solo funciones definidas por el usuario.
-        file << std::format("CALL PROC_{}\n", _sem._called.top());
+        // Es igual a la llamada a procedimiento, pero el código del procedimiento
+        // debe dejar el valor de retorno en el lugar correspondiente del marco anterior.
+        return proc_call();
     }
+    
+// ----------------------------------------------------------------------
+// 5. ENTRADA Y SALIDA (READ/WRITE)
+// ----------------------------------------------------------------------
 
     void read()
     {
-        file << std::format("PUSH {}\n", _sem.get_address(_sem._last_id));
-        file << "READ\n";
+        // LEER: Incrementa s, lee un valor de entrada y lo almacena en M[s].
+        write_instruction("LEER"); 
+
+        // Luego, el valor leído (ahora en M[s]) debe ser asignado a la variable.
+        int level = _sem.get_level(_sem._last_id);
+        int offset = _sem.get_offset(_sem._last_id);
+        
+        if (level != -1 && offset != -1) {
+            // ALVL m, n: Asigna M[s] a M[D[m]+n] y s := s - 1 (consumiendo el valor leído).
+            write_instruction(std::format("ALVL {}, {}", level, offset));
+        } else {
+             std::cerr << "Error: No se encontró dirección para LEER en " << _sem._last_id << "\n";
+        }
     }
 
     void write()
     {
-        file << "WRIT\n";
+        // Asume que el valor a escribir ya fue apilado por una instrucción previa (ej: load_var o load_const).
+        // IMPR: Imprime M[s] y decrementa s (s := s - 1).
+        write_instruction("IMLN");
     }
 
     ~mepa_generator()
     {
-        file.close();
+        _file.close(); 
     }
 
 
@@ -234,12 +314,24 @@ struct mepa_generator
 
     void write_instruction(const std::string& instruction)
     {
+        // Escribe la instrucción con tabulación y actualiza la línea.
+        _file << "\t\t" << instruction << "\n";
         _current_line++;
+    }
+
+    void set_tag(const std::string& tag)
+    {
+        // Almacena la etiqueta y la línea actual. La etiqueta se escribe sin tabulación.
+        _tags[tag] = _current_line;
+        _file << tag;
+        write_instruction("NADA");
     }
 
     int _current_line { 1 };
     const semantic_analyzer& _sem;
-    std::ofstream file { std::ofstream("output.mep") };
-    int label_counter = 0;
-    std::stack<int> label_stack;
+    // Usamos un nombre de archivo diferente para el manejo del segundo pase
+    std::ofstream _file { std::ofstream("output.mep") }; 
+    int label_counter = 1; // Contador de etiquetas (inicia en 1 para evitar conflicto con TAG_MAIN)
+    std::stack<int> label_stack; // Pila para etiquetas de control de flujo
+    std::map<std::string, int> _tags; // Mapa para almacenar {TAG_nombre: número_línea}
 };

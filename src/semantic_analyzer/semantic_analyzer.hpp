@@ -22,7 +22,7 @@ struct semantic_analyzer
         switch (_current_state) 
         {
             case state::READY:      return is_declared(symbol);
-            case state::PROGRAM:    _current_scope_name = symbol;   return push_symbol(symbol, symbol_table::type::PROGRAM);
+            case state::PROGRAM:    _current_scope_name = symbol; _scopes.push_front(symbol_table(_current_scope_name)); return push_symbol(symbol, symbol_table::type::PROGRAM);
             case state::VAR:        _tmp_vars.push_back(symbol);    return {};
             case state::PRODCEDURE: _current_scope_name = symbol;   return push_symbol(symbol, symbol_table::type::PROCEDURE);
             case state::FUNCTION:   _current_scope_name = symbol;   return push_symbol(symbol, symbol_table::type::FUNCTION);
@@ -110,9 +110,13 @@ struct semantic_analyzer
 
     std::expected<void, error> set_return(symbol_table::type type)
     {
+        current_scope().push_return_symbol(_current_scope_name, type);
+
         for(auto& scope : _scopes)
             if (scope.check(_current_scope_name))
+            {
                 scope.set_return(_current_scope_name, type);
+            }
         return {};
     }
 
@@ -206,6 +210,8 @@ struct semantic_analyzer
         for(auto it = _tmp_fparams.rbegin(); it != _tmp_fparams.rend(); ++it)
         {
             auto symbol = *it;
+                    std::cout << "Fparam: " << symbol << "\n" ;
+
             auto ok = current_scope().push_fparam_symbol(symbol, type);
             if(not ok)
                 return std::unexpected(error(std::format("Semantic Error: \"{}\" is already defined.", symbol)));
@@ -384,17 +390,38 @@ struct semantic_analyzer
             return {};
 
         return check_expected(_expression_type);
-     /*   if(_expression_type != _next_type.top() && _next_type.top()==symbol_table::type::INTEGER)
-            return std::unexpected(error("Semantic Error! Expected expression evaluated to integer."));
-
-        if(_expression_type != _next_type.top() && _next_type.top()==symbol_table::type::BOOLEAN)
-            return std::unexpected(error("Semantic Error! Expected expression evaluated to boolean."));
-
-        if(_expression_type != _next_type.top())
-            return std::unexpected(error("Semantic Error! Report me."));
-*/
         return {};
     }
+
+    // Nuevo método para que el generador de código verifique si se está asignando al retorno de la función
+    bool is_function_return_assignment(const std::string& symbol_id) const
+    {
+        // 1. Debe estar en un ámbito de función
+        if (_current_state != state::FUNCTION && _current_state != state::PRODCEDURE) {
+             // Si el estado es VAR/READY/FPARAM, no estamos dentro del cuerpo de la función/procedimiento
+             // donde el nombre del scope es el actual. Necesitamos el nombre del scope actual.
+             // Asumo que _scopes.front() es el scope actual.
+        }
+        
+        // 2. Comprobar si el símbolo es el nombre del ámbito más interno (el actual).
+        if (!_scopes.empty() && symbol_id == _scopes.front().get_name()) {
+            
+            // 3. Verificar que ese ámbito es una FUNCIÓN.
+            // Para verificar el tipo del ámbito actual, primero necesitamos encontrarlo en un scope superior
+            // ya que el nombre de la función/procedimiento solo se registra en el scope padre.
+            
+            // Buscamos el nombre del scope actual en el scope superior (si existe)
+            if (_scopes.size() > 1) {
+                const symbol_table& parent_scope = _scopes[1];
+                if (parent_scope.check(symbol_id)) {
+                    symbol_table::type scope_type = parent_scope.get_type(symbol_id);
+                    return scope_type == symbol_table::type::FUNCTION;
+                }
+            }
+        }
+        return false;
+    }
+
 
     symbol_table& current_scope() { return _scopes.front(); }
 
@@ -402,10 +429,11 @@ struct semantic_analyzer
     {
         for (auto& scope : _scopes)
         {
-            if (scope.get_name() == scope_name)
-            {
+            std::cout << scope_name << "\t" << scope.get_name() << "\n";
+          //  if (scope.get_name() == scope_name)
+           // {
                 return scope.count_variables(); 
-            }
+           // }
         }
         return 0; // Si no se encuentra el alcance (aunque no debería pasar si la llamada es válida).
     }
@@ -416,7 +444,50 @@ struct semantic_analyzer
             if (scope.check(symbol))
                 return scope.get_address(symbol); // Asumiendo que get_address devuelve la dirección MEPA/memoria
         
-        return -1; // Error o no encontrado
+        return -9999; // Usar el valor de error de symbol_table
+    }
+
+    // MEPA: Devuelve el nivel léxico del ámbito actual (profundidad).
+    // Si _scopes.size() es 1 (solo global), devuelve 0.
+    int get_current_level() const
+    {
+        if (_scopes.empty()) return 0; // Debería ser imposible si 'global' está siempre.
+        return _scopes.size() - 1;
+    }
+
+    // MEPA: Devuelve la diferencia de nivel léxico (m) entre el ámbito actual (_scopes[0])
+    // y el ámbito donde se declara el símbolo (i).
+    int get_level(const std::string& symbol) const
+    {
+        // 1. Encontrar el offset del símbolo
+        int offset = get_offset(symbol);
+
+        // 2. Caso especial: Si el offset es negativo (-2, -3, ...), es un PARÁMETRO FORMAL.
+        // El parámetro se encuentra en el marco de activación inmediatamente superior (el llamador).
+        if (offset < 0 && offset != -9999) {
+            return 1; // La diferencia de nivel (m) es siempre 1 para acceder al llamador.
+        }
+
+        // 3. Caso Normal: Local o Global (variables con offset >= 0).
+        // 'i' representa cuántos niveles de anidamiento hay que subir.
+        for (size_t i = 0; i < _scopes.size(); ++i) {
+            if (_scopes[i].check(symbol)) {
+                return i; // i es la 'm' en APVL m, n
+            }
+        }
+        return -9999; // Símbolo no encontrado (usamos el valor de error)
+    }
+
+    // MEPA: Devuelve el desplazamiento (n) del símbolo dentro de su marco de activación.
+    int get_offset(const std::string& symbol) const
+    {
+        for(auto& scope : _scopes) {
+            if ( scope._addresses.contains(symbol) ) {
+                // get_offset en symbol_table devuelve el desplazamiento (n)
+                return scope.get_offset(symbol); 
+            }
+        }
+        return -9999; // Símbolo no encontrado
     }
 
     std::expected<void, error>  is_writable()
@@ -446,5 +517,5 @@ struct semantic_analyzer
     std::stack<std::string> _called {};
     std::vector<std::string> _tmp_vars    {};
     std::vector<std::string> _tmp_fparams {};
-    std::deque<symbol_table> _scopes { symbol_table("global") };
+    std::deque<symbol_table> _scopes { };
 };
