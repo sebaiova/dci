@@ -5,10 +5,12 @@
 #include <semantic_analyzer.hpp>
 #include <mepa_generator.hpp>
 
+// --- MACROS ---
 #define T(TOKEN) lexeme::TOKEN 
 #define N(TOKEN) non_terminal::TOKEN
 #define S(FUNC) &semantic_analyzer::FUNC
 #define G(FUNC) &mepa_generator::FUNC
+// --- END MACROS ---
 
 using PARAMETRO_FORMAL = 
     rules<
@@ -35,7 +37,9 @@ rules<
 
 using LISTA_FACTORES = 
 rules<
-        rh<N(OPERADOR_FACTORES), N(FACTOR), N(LISTA_FACTORES)>,
+    rh<T(MULT), S(lint), N(FACTOR), G(mult_op), N(LISTA_FACTORES)>,
+    rh<T(AND), S(lbool), N(FACTOR), G(and_op), N(LISTA_FACTORES)>,
+    rh<T(DIV), S(lint), N(FACTOR), G(div_op), N(LISTA_FACTORES)>,
     rh<>
 >;
 
@@ -59,7 +63,9 @@ rules<
 
 using LISTA_TERMINOS = 
     rules<
-        rh<N(OPERADOR_TERMINOS), N(TERMINO), N(LISTA_TERMINOS)>,
+        rh<T(ADD), S(lint), N(TERMINO), G(add_op), N(LISTA_TERMINOS)>,
+        rh<T(SUB), S(lint), N(TERMINO), G(sub_op), N(LISTA_TERMINOS)>,
+        rh<T(OR), S(lbool), N(TERMINO), G(or_op), N(LISTA_TERMINOS)>,
         rh<>
     >;
 
@@ -71,31 +77,38 @@ using SENTENCIA =
 
 using SENTENCIA_CONDICIONAL = 
     rules<
-        rh<T(IF), N(EXPRESION), S(lbool), T(THEN), N(SENTENCIA), N(SENTENCIA_ELSE)>
+        // G(if_begin) para generar JMPF después de evaluar la EXPRESION
+        rh<T(IF), N(EXPRESION), S(lbool), G(if_begin), T(THEN), N(SENTENCIA), N(SENTENCIA_ELSE), G(if_end)>
     >;
 
 using SENTENCIA_ELSE = 
     rules<
-        rh<T(ELSE), N(SENTENCIA)>,
+        // G(else_begin) para generar JMP y colocar la etiqueta de entrada del ELSE
+        rh<T(ELSE), G(else_begin), N(SENTENCIA)>,
         rh<>
     >;
 
 using SENTENCIA_REPETITIVA = 
     rules<
-        rh<T(WHILE), N(EXPRESION), S(lbool), T(DO), N(SENTENCIA)>
+        // G(while_mark) para marcar la etiqueta de inicio del bucle
+        // G(while_begin) para generar JMPF de salida
+        // G(while_end) para generar JMP de retorno al inicio y colocar la etiqueta de salida
+        rh<T(WHILE), G(while_mark), N(EXPRESION), S(lbool), G(while_begin), T(DO), N(SENTENCIA), G(while_end)>
     >;
 
 using SENTENCIA_SIMPLE = 
     rules<
         rh<N(SENTENCIA_CONDICIONAL)>,
         rh<N(SENTENCIA_REPETITIVA)>,
-        rh<T(IDENTIFIER), S(facs), N(SENTENCIA_SIMPLE1)>
+        rh<T(IDENTIFIER), S(facs), N(SENTENCIA_SIMPLE1)>,
+        rh<T(WRITE), T(OPEN_PARENTHESIS), N(EXPRESION_SIMPLE), G(write), T(CLOSE_PARENTHESIS)>,
+        rh<T(READ), T(OPEN_PARENTHESIS), T(IDENTIFIER), S(is_writable), G(read), T(CLOSE_PARENTHESIS)>
     >;
 
 using SENTENCIA_SIMPLE1 = 
     rules<
-        rh<T(OPEN_PARENTHESIS), S(lproc), N(PARAMETROS_ACTUALES), S(check_call),T(CLOSE_PARENTHESIS)>,
-        rh<T(ASSIGNATION), S(assign_open), N(EXPRESION), S(assign_close)>
+        rh<T(OPEN_PARENTHESIS), S(lproc), N(PARAMETROS_ACTUALES), G(proc_call), S(check_call), T(CLOSE_PARENTHESIS)>,
+        rh<T(ASSIGNATION), S(assign_open), N(EXPRESION), S(assign_close), G(assign)>
     >;
 
 using SENTENCIA_COMPUESTA = 
@@ -110,30 +123,36 @@ using EXPRESION =
 
 using EXPRESION1 =  
     rules<
-        rh<T(RELATIONAL_OPERATOR), S(lint), N(EXPRESION_SIMPLE), S(lint), S(facb), S(expb)>,
+        rh<T(REL_EQ), S(lint), N(EXPRESION_SIMPLE), S(lint), S(facb), G(eq_op), S(expb)>,
+        rh<T(REL_NEQ), S(lint), N(EXPRESION_SIMPLE), S(lint), S(facb), G(neq_op), S(expb)>,
+        rh<T(REL_MIN), S(lint), N(EXPRESION_SIMPLE), S(lint), S(facb), G(min_op), S(expb)>,
+        rh<T(REL_MAJ), S(lint), N(EXPRESION_SIMPLE), S(lint), S(facb), G(maj_op), S(expb)>,
+        rh<T(REL_MINEQ), S(lint), N(EXPRESION_SIMPLE), S(lint), S(facb), G(mineq_op), S(expb)>,
+        rh<T(REL_MAJEQ), S(lint), N(EXPRESION_SIMPLE), S(lint), S(facb), G(majeq_op), S(expb)>,
         rh<>
     >;
 
 using EXPRESION_SIMPLE = 
     rules<
-        rh<T(ADD), S(nint), N(TERMINO), N(LISTA_TERMINOS)>,
-        rh<T(SUB), S(nint), N(TERMINO), N(LISTA_TERMINOS)>,
+        rh<T(ADD), N(TERMINO), N(LISTA_TERMINOS)>,
+        rh<T(SUB), N(TERMINO), N(LISTA_TERMINOS)>,
         rh<N(TERMINO), N(LISTA_TERMINOS)>
     >;
 
 using FACTOR = 
     rules<
-        rh<T(NUMBER), S(faci)>,
-        rh<T(TRUE), S(facb)>,
-        rh<T(FALSE), S(facb)>,
-        rh<T(NOT), N(FACTOR), S(lbool)>,
+        rh<T(NUMBER), S(faci), G(load_const)>, // G(load_const) para PUSH [valor]
+        rh<T(TRUE), S(facb), G(load_const)>,   // G(load_const) para PUSH 1
+        rh<T(FALSE), S(facb), G(load_const)>,  // G(load_const) para PUSH 0
+        rh<T(NOT), N(FACTOR), S(lbool), G(not_op)>,
         rh<T(OPEN_PARENTHESIS), S(openp), N(EXPRESION), T(CLOSE_PARENTHESIS), S(closep), S(exp)>,
-        rh<T(IDENTIFIER), S(facs), N(FACTOR1)>
+        rh<T(IDENTIFIER), S(facs), G(load_var), N(FACTOR1)> 
     >;
 
 using FACTOR1 = 
     rules<
-        rh<T(OPEN_PARENTHESIS), S(lfunc), S(opencall), N(PARAMETROS_ACTUALES), S(check_call), T(CLOSE_PARENTHESIS), S(closecall)>,
+        // Función: G(func_call) para emitir CALL. El resultado queda en la pila.
+        rh<T(OPEN_PARENTHESIS), S(lfunc), S(opencall), N(PARAMETROS_ACTUALES), G(func_call), S(check_call), T(CLOSE_PARENTHESIS), S(closecall)>,
         rh<>
     >;
 
@@ -148,19 +167,6 @@ using TERMINO =
         rh<N(FACTOR), N(LISTA_FACTORES)>
     >;
 
-using OPERADOR_FACTORES = 
-    rules<
-        rh<T(MULT), S(lint), S(nint)>,
-        rh<T(AND), S(lbool), S(nbool)>,
-        rh<T(DIV), S(lint), S(nint)>
-    >;
-
-using OPERADOR_TERMINOS = 
-    rules<
-        rh<T(ADD), S(lint), S(nint)>,
-        rh<T(SUB), S(lint), S(nint)>,
-        rh<T(OR), S(lbool), S(nbool)>
-    >;
 
 using LISTA_DECLARACION_VARIABLES = 
     rules<
@@ -175,12 +181,16 @@ using PARAMETROS_FORMALES =
 
 using PROCEDIMIENTO = 
     rules<
-        rh<T(PROCEDURE), S(procedure), T(IDENTIFIER), S(ready), S(push_scope), N(PARAMETROS_FORMALES), T(SEMI_COLON), N(BLOQUE), S(pop_scope)>
+        // G(proc_entry) para colocar la etiqueta y generar ENTER
+        // G(proc_exit) para generar RETURN
+        rh<T(PROCEDURE), S(procedure), T(IDENTIFIER), S(ready), S(push_scope), G(proc_entry), N(PARAMETROS_FORMALES), T(SEMI_COLON), N(BLOQUE), G(proc_exit), S(pop_scope)>
     >;
 
 using FUNCION = 
     rules<
-        rh<T(FUNCTION), S(function), T(IDENTIFIER), S(ready), S(push_scope), N(PARAMETROS_FORMALES), T(COLON), S(function), N(DATA_TYPE), T(SEMI_COLON), S(ready), N(BLOQUE), S(pop_scope)>
+        // G(func_entry) para colocar la etiqueta y generar ENTER
+        // G(func_exit) para generar RETURN
+        rh<T(FUNCTION), S(function), T(IDENTIFIER), S(ready), S(push_scope), G(func_entry), N(PARAMETROS_FORMALES), T(COLON), S(function), N(DATA_TYPE), T(SEMI_COLON), S(ready), N(BLOQUE), G(func_exit), S(pop_scope)>
     >;
 
 using SUBRUTINA = 
@@ -203,12 +213,12 @@ using AREA_SUBRUTINAS =
 
 using BLOQUE =      
     rules<
-        rh<N(AREA_VARIABLES), N(AREA_SUBRUTINAS), N(SENTENCIA_COMPUESTA)>
+        rh<N(AREA_VARIABLES), N(AREA_SUBRUTINAS), G(stack_enter), N(SENTENCIA_COMPUESTA)>
     >;
 
 using PROGRAMA =    
     rules<
-        rh<T(PROGRAM), S(program), T(IDENTIFIER), G(program), S(ready), T(SEMI_COLON), N(BLOQUE), T(DOT)>
+        rh<T(PROGRAM), S(program), T(IDENTIFIER), G(program_begin), S(ready), T(SEMI_COLON), N(AREA_VARIABLES), N(AREA_SUBRUTINAS), G(program_tag), N(SENTENCIA_COMPUESTA), G(program_end), T(DOT)>
     >;
 
 using START = PROGRAMA;

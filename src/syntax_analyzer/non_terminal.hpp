@@ -32,9 +32,7 @@
     X(FACTOR)\
     X(FACTOR1)\
     X(DATA_TYPE)\
-    X(TERMINO)\
-    X(OPERADOR_FACTORES)\
-    X(OPERADOR_TERMINOS)
+    X(TERMINO)
 
 enum class non_terminal 
 {

@@ -19,7 +19,7 @@ namespace state
             case ')':       return result { lexeme::UNDETERMINATED, state::space<lexeme::CLOSE_PARENTHESIS> };
             case '{':       return result { lexeme::UNDETERMINATED, state::comment };
             case '}':       return result { lexeme::UNDETERMINATED, state::space<lexeme::CLOSE_CURLY_BRACKET> };
-            case '=':       return result { lexeme::UNDETERMINATED, state::space<lexeme::RELATIONAL_OPERATOR> };
+            case '=':       return result { lexeme::UNDETERMINATED, state::space<lexeme::REL_EQ> };
             case '<':       return result { lexeme::UNDETERMINATED, state::relop };
             case '>':       return result { lexeme::UNDETERMINATED, state::relop_maj };
             case ':':       return result { lexeme::UNDETERMINATED, state::assign };
@@ -54,9 +54,9 @@ namespace state
     {
         switch (c)
         {
-            case '=':
-            case '>': return result { lexeme::UNDETERMINATED, state::space<lexeme::RELATIONAL_OPERATOR> };
-            default : return result { lexeme::RELATIONAL_OPERATOR, state::start };
+            case '=': return result { lexeme::UNDETERMINATED, state::space<lexeme::REL_MINEQ> };
+            case '>': return result { lexeme::UNDETERMINATED, state::space<lexeme::REL_NEQ> };
+            default : return result { lexeme::REL_MIN, state::start };
         }
     };
 
@@ -64,8 +64,8 @@ namespace state
     {
         switch (c)
         {
-            case '=': return result { lexeme::UNDETERMINATED, state::space<lexeme::RELATIONAL_OPERATOR> };
-            default : return result { lexeme::RELATIONAL_OPERATOR, state::start };
+            case '=': return result { lexeme::UNDETERMINATED, state::space<lexeme::REL_MAJEQ> };
+            default : return result { lexeme::REL_MAJ, state::start };
         }
     };
 

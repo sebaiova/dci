@@ -1,39 +1,17 @@
-Program ConductordePrueba;
-Var
-  c,h,r: integer;
+PROGRAM IOTest;
+VAR X, Y : INTEGER;
+    a : boolean;
 
+BEGIN
+    WRITE(A);
+    
+    READ(Y); 
+    
+    WRITE(X);
+    Y := 10;
 
-function pru3(): integer;
-begin
-  {pru:=18}
-  r := 4;
-end;
-
-procedure pru2();
-begin
-  {pru:=18}
-  r := 4;
-end;
-
-Begin
-  {PRU2;
-  pru2; }
-  c := 4;
-  if (55 > -55) or true and (3>3) then
-  begin
-     h := 16;
-     write(0);
-  end
-  else
-     write(1);
-
-  while 2>pru3 do
-  begin
-    h:= pru3 + c;
-  end;  
-
-  if 4>7 then
-    r := 1
-  else
-    r := 0;
-End.
+    IF X > Y THEN
+        WRITE(X - Y)
+    ELSE
+        WRITE(Y - X);
+END.

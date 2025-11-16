@@ -61,7 +61,7 @@ namespace
     {
         static consteval auto get()
         {
-            if constexpr( decltype(Bt)::is_terminal() || decltype(Bt)::is_semantic_rule())
+            if constexpr( decltype(Bt)::is_terminal() || decltype(Bt)::is_semantic_rule() || decltype(Bt)::is_mepa_rule() )
                 return rh<Bt>{};
             else if constexpr ( decltype(Bt)::is_non_terminal() ) 
                 return ff<Bt>::get();
@@ -80,7 +80,7 @@ namespace
     {
         static consteval auto get()
         {
-            if constexpr (( (decltype(Bts)::is_terminal() || decltype(Bts)::is_semantic_rule()) && ... ))
+            if constexpr (( (decltype(Bts)::is_terminal() || decltype(Bts)::is_semantic_rule() || decltype(Bts)::is_mepa_rule()) && ... ))
                 return rh<Bts...>{};
             else 
                 return deep_search<typename transform_all<Bts...>::type>::get();

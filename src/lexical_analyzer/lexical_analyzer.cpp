@@ -35,7 +35,7 @@ auto lexical_analyzer::next_token() -> std::expected<symbol, error>
         if(current_state->token != lexeme::UNDETERMINATED)
         {
             backtrack();
-            auto attribute { current_state->token==lexeme::IDENTIFIER ? std::make_optional(std::string(start, it)) : std::nullopt };
+            auto attribute { std::string(start, it) };
             output.token = current_state->token;
             output.attribute = attribute;
             auto ok = token_register(output);
@@ -83,9 +83,9 @@ bool has_value(const lexeme lex)
 std::expected<void, error> lexical_analyzer::token_register(const symbol& s)
 {   
     token_stream.push_back(s);
-    if(s.attribute)
+    if(s.token == lexeme::IDENTIFIER)
     {
-        std::string symbol = *s.attribute;
+        std::string symbol = s.attribute;
         std::transform(symbol.begin(), symbol.end(), symbol.begin(), [](unsigned char c){ return std::tolower(c);});
         auto ok = _semantic.analyze_symbol(symbol);
         if (not ok)
@@ -93,7 +93,10 @@ std::expected<void, error> lexical_analyzer::token_register(const symbol& s)
     }
 
     if(has_value(s.token))
+    {
         _semantic._last_value = s.token;
+        _semantic._last_attribute = s.attribute;
+    }
 
     return {};
 }

@@ -10,7 +10,7 @@
 struct symbol 
 {
     lexeme token {lexeme::UNDETERMINATED};
-    std::optional<std::string> attribute;
+    std::string attribute;
     std::size_t col {0};
     std::size_t line {0};
 };

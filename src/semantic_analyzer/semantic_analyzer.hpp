@@ -38,9 +38,9 @@ struct semantic_analyzer
         return std::unexpected(error(std::format("Semantic Error: \"{}\" is already defined.", symbol)));
     }
 
-    std::expected<void, error>  push_scope()
+    std::expected<void, error> push_scope()
     {
-        _scopes.push_front({});
+        _scopes.push_front({_current_scope_name});
         return {};
     }
 
@@ -105,12 +105,6 @@ struct semantic_analyzer
     std::expected<void, error> program()
     {        
         _current_state = state::PROGRAM;
-        push_symbol("write", symbol_table::type::PROCEDURE);
-        current_scope().push_fparam("write", symbol_table::type::INTEGER);
-
-        push_symbol("read", symbol_table::type::PROCEDURE);
-        current_scope().push_fparam("read", symbol_table::type::INTEGER);
-
         return {};
     }
 
@@ -165,10 +159,10 @@ struct semantic_analyzer
         if(get_type(_last_id) == symbol_table::type::PROCEDURE)
         {
             auto fparams = get_fparams(_last_id);
-            _tmp_aparams.emplace(fparams.begin(), fparams.end());            
+            _tmp_aparams.emplace(fparams.begin(), fparams.end()); 
+            _called.push(_last_id);         
             return {};
         }
-
         return std::unexpected(std::format("Semantic Error: \"{}\" is not a procedure.", _last_id));
     }
 
@@ -177,7 +171,8 @@ struct semantic_analyzer
         if(get_type(_last_id) == symbol_table::type::FUNCTION)
         {
             auto fparams = get_fparams(_last_id);
-            _tmp_aparams.emplace(fparams.begin(), fparams.end());             
+            _tmp_aparams.emplace(fparams.begin(), fparams.end()); 
+            _called.push(_last_id);                     
             return {};
         }
 
@@ -201,16 +196,19 @@ struct semantic_analyzer
         if(not _tmp_aparams.top().empty())
             return std::unexpected(std::format("Semantic Error: Incorrect number of parameters."));
         _tmp_aparams.pop();
+        _called.pop();
+
         return {};
     }
 
     std::expected<void, error> declare_fparams(symbol_table::type type)
     {
-        for(auto& symbol : _tmp_fparams)
+        for(auto it = _tmp_fparams.rbegin(); it != _tmp_fparams.rend(); ++it)
         {
-            auto ok = push_symbol(symbol, type);
+            auto symbol = *it;
+            auto ok = current_scope().push_fparam_symbol(symbol, type);
             if(not ok)
-                return std::unexpected(ok.error());
+                return std::unexpected(error(std::format("Semantic Error: \"{}\" is already defined.", symbol)));
 
             for(auto& scope : _scopes)
                 if (scope.check(_current_scope_name))
@@ -398,13 +396,40 @@ struct semantic_analyzer
         return {};
     }
 
-
-
     symbol_table& current_scope() { return _scopes.front(); }
+
+    size_t get_local_var_count(const std::string& scope_name) const
+    {
+        for (auto& scope : _scopes)
+        {
+            if (scope.get_name() == scope_name)
+            {
+                return scope.count_variables(); 
+            }
+        }
+        return 0; // Si no se encuentra el alcance (aunque no debería pasar si la llamada es válida).
+    }
+
+    int get_address(const std::string& symbol) const
+    {
+        for(auto& scope : _scopes)
+            if (scope.check(symbol))
+                return scope.get_address(symbol); // Asumiendo que get_address devuelve la dirección MEPA/memoria
+        
+        return -1; // Error o no encontrado
+    }
+
+    std::expected<void, error>  is_writable()
+    {
+        if(get_type(_last_id)==symbol_table::type::INTEGER)
+            return {};
+        return std::unexpected(error(std::format("Semantic Error: Cannot read into \"{}\".", _last_id)));
+    }
 
     std::string _last_id {};
     std::string _assign_id {};
     lexeme _last_value{};
+    std::string _last_attribute {};
 
     symbol_table::type _assign_type { symbol_table::type::VOID };
     symbol_table::type _assigned_type { symbol_table::type::VOID };
@@ -418,7 +443,8 @@ struct semantic_analyzer
 
     std::string _current_scope_name {};
     std::stack<std::deque<symbol_table::type>> _tmp_aparams {};
+    std::stack<std::string> _called {};
     std::vector<std::string> _tmp_vars    {};
     std::vector<std::string> _tmp_fparams {};
-    std::deque<symbol_table> _scopes { 1 };
+    std::deque<symbol_table> _scopes { symbol_table("global") };
 };

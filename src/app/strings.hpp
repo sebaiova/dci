@@ -16,7 +16,12 @@ constexpr std::string_view to_string(lexeme l)
         case lexeme::ADD : return "+";
         case lexeme::SUB : return "-";
         case lexeme::MULT : return "*";
-        case lexeme::RELATIONAL_OPERATOR: return "relational_operator";
+        case lexeme::REL_EQ: return "=";
+        case lexeme::REL_NEQ: return "<>";
+        case lexeme::REL_MIN: return "<";
+        case lexeme::REL_MAJ: return ">";
+        case lexeme::REL_MINEQ: return "<=";
+        case lexeme::REL_MAJEQ: return ">=";
         case lexeme::PROGRAM: return "program";
         case lexeme::DOT: return ".";
         case lexeme::COMMA: return ",";

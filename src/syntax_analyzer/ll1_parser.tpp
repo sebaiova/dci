@@ -72,14 +72,15 @@ template<beta...Bs> struct rule <rh<Bs...>>
             }
             else if constexpr (decltype(Bs)::is_mepa_rule())
             {
-                return (g.*Bs.value)();
+                // La regla MEPA retorna void, así que solo la llamamos.
+                (g.*Bs.value)();
+                return {};
             }
             else 
-                return std::expected<void, error>{std::unexpected(error("Panic"))};
+                return std::expected<void, error>{std::unexpected(error("Panic Beta"))};
         }()) && ...))
                 ;
 
         return result;
     }
 };
-
