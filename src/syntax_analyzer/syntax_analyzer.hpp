@@ -7,7 +7,8 @@
 #include "ll1.hpp"
 #include <lexical_analyzer.hpp>
 #include <semantic_analyzer.hpp>
-#include <mepa_generator.hpp>
+
+struct mepa_generator;
 
 struct syntax_analyzer 
 {

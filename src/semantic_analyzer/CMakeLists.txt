@@ -5,5 +5,5 @@ target_include_directories(semantic_analyzer INTERFACE ${CMAKE_CURRENT_SOURCE_DI
 
 target_link_libraries(  semantic_analyzer
                         INTERFACE lexical_analyzer
-
+                        INTERFACE  mepa_generator
                         )

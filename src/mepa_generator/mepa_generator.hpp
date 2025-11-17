@@ -5,8 +5,8 @@
 #include <stack>
 #include <map>
 #include <string>
-#include <format> // Asegúrate de que tu compilador soporta std::format
-#include <semantic_analyzer.hpp> // Asumo que esta clase es funcional
+#include <format>
+#include <semantic_analyzer.hpp>
 
 struct mepa_generator 
 {
@@ -131,7 +131,8 @@ struct mepa_generator
     void load_const()
     {
         // APCT k: Apila la constante k.
-        write_instruction(std::format("APCT {}", _sem._last_attribute));
+        auto k = _sem._last_attribute=="true" ? "1" : (_sem._last_attribute=="false" ? "0" : _sem._last_attribute);
+        write_instruction(std::format("APCT {}", k));
     }
 
     void load_var()

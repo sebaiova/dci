@@ -3,9 +3,10 @@
 #include <lexemes.hpp>
 #include <error.hpp>
 #include <semantic_analyzer.hpp>
-#include <mepa_generator.hpp>
+//#include <mepa_generator.hpp>
 #include "non_terminal.hpp"
 
+struct mepa_generator;
 struct syntax_analyzer;
 
 template<class T> struct beta

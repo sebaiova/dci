@@ -2,6 +2,7 @@
 #include <lexical_analyzer.hpp>
 #include <syntax_analyzer.hpp>
 #include <semantic_analyzer.hpp>
+#include <mepa_generator.hpp>
 #include "logger.hpp"
 
 parser::parser(const std::string& str) : str { str } 
