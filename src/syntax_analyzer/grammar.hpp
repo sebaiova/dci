@@ -100,7 +100,7 @@ using SENTENCIA_SIMPLE =
     rules<
         rh<N(SENTENCIA_CONDICIONAL)>,
         rh<N(SENTENCIA_REPETITIVA)>,
-        rh<T(IDENTIFIER), S(facs), N(SENTENCIA_SIMPLE1)>,
+        rh<T(IDENTIFIER), S(facs), N(SENTENCIA_SIMPLE1), S(checkf)>,
         rh<T(WRITE), T(OPEN_PARENTHESIS), N(EXPRESION_SIMPLE), G(write), T(CLOSE_PARENTHESIS)>,
         rh<T(READ), T(OPEN_PARENTHESIS), T(IDENTIFIER), S(is_writable), G(read), T(CLOSE_PARENTHESIS)>
     >;
@@ -108,7 +108,8 @@ using SENTENCIA_SIMPLE =
 using SENTENCIA_SIMPLE1 = 
     rules<
         rh<T(OPEN_PARENTHESIS), S(lproc), N(PARAMETROS_ACTUALES), G(proc_call), S(check_call), T(CLOSE_PARENTHESIS)>,
-        rh<T(ASSIGNATION), S(assign_open), N(EXPRESION), S(assign_close), G(assign)>
+        rh<T(ASSIGNATION), S(assign_open), N(EXPRESION), S(assign_close), G(assign)>,
+        rh<>
     >;
 
 using SENTENCIA_COMPUESTA = 
@@ -146,7 +147,7 @@ using FACTOR =
         rh<T(FALSE), S(facb), G(load_const)>,  // G(load_const) para PUSH 0
         rh<T(NOT), N(FACTOR), S(lbool), G(not_op)>,
         rh<T(OPEN_PARENTHESIS), S(openp), N(EXPRESION), T(CLOSE_PARENTHESIS), S(closep), S(exp)>,
-        rh<T(IDENTIFIER), S(facs), G(load_var), N(FACTOR1)> 
+        rh<T(IDENTIFIER), S(facs), G(load_var), N(FACTOR1), S(checkf)> 
     >;
 
 using FACTOR1 = 

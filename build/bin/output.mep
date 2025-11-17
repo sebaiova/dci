@@ -5,6 +5,10 @@ Lpru3		NADA
 		APCT 4
 		ALVL 1, -3
 		RTPR 1, 0
+Lpru4		NADA
+		ENPR 1
+		APCT 4
+		RTPR 1, 0
 Lpru2		NADA
 		ENPR 1
 		APCT 4

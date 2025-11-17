@@ -10,6 +10,12 @@ begin
   pru3 := 4;      
 end;
 
+function pru4():boolean;
+begin
+  { pru3 := 18 }  
+  pru3 := 4;      
+end;
+
 procedure pru2();
 begin
   {pru:=18}
@@ -20,6 +26,7 @@ Begin
   {PRU2;
   pru2; }
   c := 4;
+  
   if (55 > -55) or true and (3>3) then
   begin
      h := 16;

@@ -176,11 +176,18 @@ struct semantic_analyzer
         {
             auto fparams = get_fparams(_last_id);
             _tmp_aparams.emplace(fparams.begin(), fparams.end()); 
-            _called.push(_last_id);                     
+            _called.push(_last_id);  
             return {};
         }
 
         return std::unexpected(std::format("Semantic Error: \"{}\" is not a function.", _last_id));
+    }
+
+    std::expected<void, error> checkf()
+    {
+        if(call == 1)
+            return std::unexpected(std::format("Semantic Error: \"{}\" require () for call.", _last_id));
+        return {};
     }
 
     std::expected<void, error> check_param()
@@ -201,7 +208,7 @@ struct semantic_analyzer
             return std::unexpected(std::format("Semantic Error: Incorrect number of parameters."));
         _tmp_aparams.pop();
         _called.pop();
-
+        call = 0;
         return {};
     }
 
@@ -271,6 +278,9 @@ struct semantic_analyzer
         _last_type = get_type(_last_id);
         if(_last_type == symbol_table::type::FUNCTION)
             _last_type = get_return(_last_id);
+        
+        if(_last_type == symbol_table::type::FUNCTION || _last_type == symbol_table::type::PROCEDURE)
+            call = 1;                   
 
         _expression_type = _last_type;
         _assigned_type = _last_type;
@@ -509,4 +519,5 @@ struct semantic_analyzer
     std::vector<std::string> _tmp_vars    {};
     std::vector<std::string> _tmp_fparams {};
     std::deque<symbol_table> _scopes { };
+    int call = 0;
 };
