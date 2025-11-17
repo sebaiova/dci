@@ -1,4 +1,4 @@
-set(CMAKE_BUILD_TYPE Release)
+#set(CMAKE_BUILD_TYPE Release)
 
 add_library(
     syntax_analyzer STATIC
