@@ -1,0 +1,59 @@
+		INPP
+		DSVS L0
+Lpru3		NADA
+		ENPR 1
+		APCT 4
+		ALVL 1, -3
+		RTPR 1, 0
+Lpru2		NADA
+		ENPR 1
+		APCT 4
+		ALVL 1, 2
+		RTPR 1, 0
+L0		NADA
+		ENPR 0
+		RMEM 3
+		APCT 4
+		ALVL 0, 0
+		APCT 55
+		APCT 55
+		CMMA
+		APCT true
+		APCT 3
+		APCT 3
+		CMMA
+		CONJ
+		DISJ
+		DSVF L1
+		APCT 16
+		ALVL 0, 1
+		APCT 0
+		IMLN
+		DSVS L2
+L1		NADA
+		APCT 1
+		IMLN
+L2		NADA
+L3		NADA
+		APCT 2
+		RMEM 1
+		CMMA
+		DSVF L4
+		RMEM 1
+		APVL 0, 0
+		SUMA
+		ALVL 0, 1
+		DSVS L3
+L4		NADA
+		APCT 4
+		APCT 7
+		CMMA
+		DSVF L5
+		APCT 1
+		ALVL 0, 2
+		DSVS L6
+L5		NADA
+		APCT 0
+		ALVL 0, 2
+L6		NADA
+		PARA

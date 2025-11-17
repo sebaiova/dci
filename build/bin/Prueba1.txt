@@ -1,0 +1,35 @@
+program b;
+var a,t:integer; 
+d:boolean;
+
+procedure XX1();
+var d, aver:integer;
+
+begin
+  while 55<3 do
+     d:= 55+a+1;
+ 
+  aver:= 33;
+  XX1();
+
+end;
+
+procedure XX2(b2: integer; b1:boolean);
+var a:boolean; 
+d:integer;
+
+begin
+  if 1>2 then
+     d:= 55+t+1;
+
+  {XX1;  }
+  XX1();  
+end;
+
+
+begin
+ {a:= 55>3
+  d:= 55>t+a}
+  XX2(3,7>3);
+
+end.
