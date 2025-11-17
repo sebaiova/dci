@@ -34,7 +34,7 @@ end;
 
 Begin
 
-  a:= pru(a);   {----> ac� da error tb}
+                                                                                                                                                                                                                                                                                                            a:= pru(a);   {----> ac� da error tb}
   factorial := factorial(1);
   
   a:= local;

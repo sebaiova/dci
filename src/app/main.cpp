@@ -17,12 +17,12 @@
 
 int main(int argc, char** argv)
 {
-    if(argc<1)
+    if(argc<2)
         std::cout << "No input file\n";
     else
     {
-  //   auto success { open(argv[1]).and_then([](auto str){
-     auto success { open("./ps_3.pas").and_then([](auto str){
+     auto success { open(argv[1]).and_then([](auto str){
+    // auto success { open("./ps_3.pas").and_then([](auto str){
         parser p(str); 
             return p.run(); 
         })};
