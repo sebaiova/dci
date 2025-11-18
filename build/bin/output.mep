@@ -1,48 +1,16 @@
 		INPP
 		DSVS L0
-Lpru2		NADA
-		ENPR 1
-		APCT 4
-		ALVL 1, 2
-		RTPR 1, 1
-Lpru3		NADA
-		ENPR 1
-		APCT 4
-		ALVL 1, 2
-		RTPR 1, 2
 L0		NADA
 		ENPR 0
-		RMEM 4
-		APVL 0, 3
-		APCT 2
-		APCT 4
-		SUMA
-		LLPR Lpru3
+		RMEM 3
+		APCT 5
+		ALVL 0, 0
+		APCT 7
+		ALVL 0, 1
 		APVL 0, 0
-		APCT 5
-		APCT 4
-		MULT
-		APVL 0, 2
-		MULT
-		CMMA
-		APCT 3
-		APCT 5
-		CMDG
-		APCT 1
-		CONJ
-		DISJ
-		APVL 0, 2
+		APVL 0, 1
 		APCT 2
-		CMMA
-		DISJ
-		LLPR Lpru2
-		APVL 0, 3
-		DSVF L1
-		APCT 1
-		IMLN
-		DSVS L2
-L1		NADA
-		APCT 0
-		IMLN
-L2		NADA
+		MULT
+		SUMA
+		ALVL 0, 2
 		PARA
