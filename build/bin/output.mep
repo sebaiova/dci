@@ -1,74 +1,48 @@
 		INPP
 		DSVS L0
-Lp		NADA
+Lpru2		NADA
 		ENPR 1
-		APVL 1, -3
-		LLPR Lp
+		APCT 4
+		ALVL 0, 2
 		RTPR 1, 1
-Lpru		NADA
+Lpru3		NADA
 		ENPR 1
-		APVL 1, 0
-		APCT 8
-		CMDG
-		LLPR Lp
-		APVL 1, -3
-		APCT 0
-		CMIG
-		DSVF L1
-		APCT 1
-		ALVL 1, -4
-		DSVS L2
-L1		NADA
-		APVL 1, -3
-		APCT 1
-		SUST
-		APCT 2
-		SUMA
-		ALVL 1, 1
-L2		NADA
-		RMEM 1
-		APVL 1, 0
-		LLPR Lpru
-		ALVL 1, 0
-		RTPR 1, 1
-Lfactorial		NADA
-		ENPR 1
-		RMEM 1
-		APVL 1, 0
-		LLPR Lpru
-		ALVL 1, 0
-		APVL 1, -3
-		APCT 1
-		CMIG
-		DSVF L3
-		APCT 1
-		ALVL 1, -4
-		DSVS L4
-L3		NADA
-		APVL 1, -3
-		ALVL 1, -4
-L4		NADA
-		RTPR 1, 1
+		APCT 4
+		ALVL 0, 2
+		RTPR 1, 2
 L0		NADA
 		ENPR 0
-		RMEM 2
-		RMEM 1
+		RMEM 4
+		APVL 0, 3
+		APCT 2
+		APCT 4
+		SUMA
+		LLPR Lpru3
 		APVL 0, 0
-		LLPR Lpru
-		ALVL 0, 0
-		RMEM 1
-		APCT 1
-		LLPR Lfactorial
-		APVL 0, 1
-		ALVL 0, 0
-		RMEM 1
-		APCT 33
-		LLPR Lpru
-		ALVL 0, 1
-		RMEM 1
+		APCT 5
+		APCT 4
+		MULT
+		APVL 0, 2
+		MULT
+		CMMA
 		APCT 3
-		LLPR Lfactorial
-		ALVL 0, 0
-		APVL 0, 0
+		APCT 5
+		CMDG
+		APCT 1
+		CONJ
+		DISJ
+		APVL 0, 2
+		APCT 2
+		CMMA
+		DISJ
+		LLPR Lpru2
+		APVL 0, 3
+		DSVF L1
+		APCT 1
 		IMLN
+		DSVS L2
+L1		NADA
+		APCT 0
+		IMLN
+L2		NADA
 		PARA
