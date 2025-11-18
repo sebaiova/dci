@@ -490,7 +490,7 @@ struct semantic_analyzer
         for(auto& scope : _scopes)
         {
             level--;
-            if (_scopes[i].check(symbol))
+            if (scope.check(symbol))
                 return level;   
         }
 
