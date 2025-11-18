@@ -486,13 +486,14 @@ struct semantic_analyzer
             return 1; // La diferencia de nivel (m) es siempre 1 para acceder al llamador.
         }
 
-        // 3. Caso Normal: Local o Global (variables con offset >= 0).
-        // 'i' representa cuántos niveles de anidamiento hay que subir.
-        for (size_t i = 0; i < _scopes.size(); ++i) {
-            if (_scopes[i].check(symbol)) {
-                return i; // i es la 'm' en APVL m, n
-            }
+        int level = _scopes.size();
+        for(auto& scope : _scopes)
+        {
+            level--;
+            if (_scopes[i].check(symbol))
+                return level;   
         }
+
         return -9999; // Símbolo no encontrado (usamos el valor de error)
     }
 

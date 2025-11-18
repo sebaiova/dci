@@ -3,12 +3,12 @@
 Lpru2		NADA
 		ENPR 1
 		APCT 4
-		ALVL 0, 2
+		ALVL 1, 2
 		RTPR 1, 1
 Lpru3		NADA
 		ENPR 1
 		APCT 4
-		ALVL 0, 2
+		ALVL 1, 2
 		RTPR 1, 2
 L0		NADA
 		ENPR 0
